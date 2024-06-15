@@ -1,0 +1,243 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="ToolBar">
+      <UniqueIdentifier>{12ea5def-f8e7-4308-b8f6-fdcffb39f015}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\icon">
+      <UniqueIdentifier>{1f005bc2-9cb3-4cde-bfe4-30de95c7b940}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\bmp">
+      <UniqueIdentifier>{360f9e54-07b1-4edf-bf5e-1043641d8b22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\jpg">
+      <UniqueIdentifier>{c7d574c0-1ac6-4962-8520-12602cff9a8c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\png">
+      <UniqueIdentifier>{4c691af4-ec0d-42f8-8d04-1399c79ab004}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="globe">
+      <UniqueIdentifier>{bebae3f3-51f1-4bf8-8bf2-7721380e2c4b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MyConfiguration.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MainFrm.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ChildFrm.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MyConfigurationDoc.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MyConfigurationView.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="FileView.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ClassView.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ViewTree.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="OutputWnd.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="PropertiesWnd.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ToolBar\AdvanceElementToolBar.h">
+      <Filter>ToolBar</Filter>
+    </ClInclude>
+    <ClInclude Include="ToolBar\BaseElementToolBar.h">
+      <Filter>ToolBar</Filter>
+    </ClInclude>
+    <ClInclude Include="globe\Global.h">
+      <Filter>globe</Filter>
+    </ClInclude>
+    <ClInclude Include="ToolBar\FileToolBar.h">
+      <Filter>ToolBar</Filter>
+    </ClInclude>
+    <ClInclude Include="ToolBar\EditToolBar.h">
+      <Filter>ToolBar</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="MyConfiguration.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MainFrm.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ChildFrm.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MyConfigurationDoc.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MyConfigurationView.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="FileView.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ClassView.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ViewTree.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="OutputWnd.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="PropertiesWnd.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ToolBar\AdvanceElementToolBar.cpp">
+      <Filter>ToolBar</Filter>
+    </ClCompile>
+    <ClCompile Include="ToolBar\BaseElementToolBar.cpp">
+      <Filter>ToolBar</Filter>
+    </ClCompile>
+    <ClCompile Include="globe\Global.cpp">
+      <Filter>globe</Filter>
+    </ClCompile>
+    <ClCompile Include="ToolBar\FileToolBar.cpp">
+      <Filter>ToolBar</Filter>
+    </ClCompile>
+    <ClCompile Include="ToolBar\EditToolBar.cpp">
+      <Filter>ToolBar</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="MyConfiguration.rc">
+      <Filter>资源文件</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\MyConfiguration.rc2">
+      <Filter>资源文件</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\icon\class_view.ico">
+      <Filter>资源文件\icon</Filter>
+    </Image>
+    <Image Include="res\icon\class_view_hc.ico">
+      <Filter>资源文件\icon</Filter>
+    </Image>
+    <Image Include="res\icon\file_view.ico">
+      <Filter>资源文件\icon</Filter>
+    </Image>
+    <Image Include="res\icon\file_view_hc.ico">
+      <Filter>资源文件\icon</Filter>
+    </Image>
+    <Image Include="res\icon\MyConfiguration.ico">
+      <Filter>资源文件\icon</Filter>
+    </Image>
+    <Image Include="res\icon\MyConfigurationDoc.ico">
+      <Filter>资源文件\icon</Filter>
+    </Image>
+    <Image Include="res\icon\output_wnd.ico">
+      <Filter>资源文件\icon</Filter>
+    </Image>
+    <Image Include="res\icon\output_wnd_hc.ico">
+      <Filter>资源文件\icon</Filter>
+    </Image>
+    <Image Include="res\icon\properties_wnd.ico">
+      <Filter>资源文件\icon</Filter>
+    </Image>
+    <Image Include="res\icon\properties_wnd_hc.ico">
+      <Filter>资源文件\icon</Filter>
+    </Image>
+    <Image Include="res\bmp\classview.bmp">
+      <Filter>资源文件\bmp</Filter>
+    </Image>
+    <Image Include="res\bmp\classview_hc.bmp">
+      <Filter>资源文件\bmp</Filter>
+    </Image>
+    <Image Include="res\bmp\explorer.bmp">
+      <Filter>资源文件\bmp</Filter>
+    </Image>
+    <Image Include="res\bmp\explorer_hc.bmp">
+      <Filter>资源文件\bmp</Filter>
+    </Image>
+    <Image Include="res\bmp\fileview.bmp">
+      <Filter>资源文件\bmp</Filter>
+    </Image>
+    <Image Include="res\bmp\fileview_hc.bmp">
+      <Filter>资源文件\bmp</Filter>
+    </Image>
+    <Image Include="res\bmp\menuimages.bmp">
+      <Filter>资源文件\bmp</Filter>
+    </Image>
+    <Image Include="res\bmp\menuimages_hc.bmp">
+      <Filter>资源文件\bmp</Filter>
+    </Image>
+    <Image Include="res\bmp\properties.bmp">
+      <Filter>资源文件\bmp</Filter>
+    </Image>
+    <Image Include="res\bmp\properties_hc.bmp">
+      <Filter>资源文件\bmp</Filter>
+    </Image>
+    <Image Include="res\bmp\sort.bmp">
+      <Filter>资源文件\bmp</Filter>
+    </Image>
+    <Image Include="res\bmp\sort_hc.bmp">
+      <Filter>资源文件\bmp</Filter>
+    </Image>
+    <Image Include="res\bmp\Toolbar.bmp">
+      <Filter>资源文件\bmp</Filter>
+    </Image>
+    <Image Include="res\bmp\Toolbar256.bmp">
+      <Filter>资源文件\bmp</Filter>
+    </Image>
+    <Image Include="res\bmp\basetoolbar.bmp">
+      <Filter>资源文件\bmp</Filter>
+    </Image>
+    <Image Include="res\bmp\advancetoolbar.bmp">
+      <Filter>资源文件\bmp</Filter>
+    </Image>
+    <Image Include="res\bmp\filetoolbar.bmp">
+      <Filter>资源文件\bmp</Filter>
+    </Image>
+    <Image Include="res\bmp\bitmap1.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\bmp\edittoolbar.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+  </ItemGroup>
+</Project>
