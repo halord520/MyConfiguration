@@ -433,7 +433,7 @@ END
 STRINGTABLE
 BEGIN
     IDR_MAINFRAME           "MyConfiguration"
-    IDR_MyConfigurationTYPE "\nMyConfiguration\nMyConfiguration\n\n\nMyConfiguration.Document\nMyConfiguration.Document"
+    IDR_MyConfigurationTYPE "\n新工程文件\n画面\nProject Documents (*.pro)\n.pro\nVersion1.0\nVersion 1.0"
     ID_WINDOW_MANAGER       "窗口(&W)..."
 END
 

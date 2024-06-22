@@ -37,7 +37,7 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
     <UseOfMfc>Dynamic</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -142,12 +142,15 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>gdiplus.lib</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -163,18 +166,20 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>gdiplus.lib</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -192,15 +197,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChildFrm.h" />
-    <ClInclude Include="ClassView.h" />
-    <ClInclude Include="FileView.h" />
     <ClInclude Include="globe\Global.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="MyConfiguration.h" />
     <ClInclude Include="MyConfigurationDoc.h" />
     <ClInclude Include="MyConfigurationView.h" />
-    <ClInclude Include="OutputWnd.h" />
-    <ClInclude Include="PropertiesWnd.h" />
+    <ClInclude Include="object\BaseObj.h" />
+    <ClInclude Include="object\line.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -208,19 +211,22 @@
     <ClInclude Include="ToolBar\BaseElementToolBar.h" />
     <ClInclude Include="ToolBar\EditToolBar.h" />
     <ClInclude Include="ToolBar\FileToolBar.h" />
-    <ClInclude Include="ViewTree.h" />
+    <ClInclude Include="ToolWnd\ClassView.h" />
+    <ClInclude Include="ToolWnd\FileView.h" />
+    <ClInclude Include="ToolWnd\OutputWnd.h" />
+    <ClInclude Include="ToolWnd\PropertiesWnd.h" />
+    <ClInclude Include="ToolWnd\ViewTree.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ChildFrm.cpp" />
-    <ClCompile Include="ClassView.cpp" />
-    <ClCompile Include="FileView.cpp" />
     <ClCompile Include="globe\Global.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="MyConfiguration.cpp" />
     <ClCompile Include="MyConfigurationDoc.cpp" />
     <ClCompile Include="MyConfigurationView.cpp" />
-    <ClCompile Include="OutputWnd.cpp" />
-    <ClCompile Include="PropertiesWnd.cpp" />
+    <ClCompile Include="MyConfigurationViewOper.cpp" />
+    <ClCompile Include="object\BaseObj.cpp" />
+    <ClCompile Include="object\line.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -231,7 +237,11 @@
     <ClCompile Include="ToolBar\BaseElementToolBar.cpp" />
     <ClCompile Include="ToolBar\EditToolBar.cpp" />
     <ClCompile Include="ToolBar\FileToolBar.cpp" />
-    <ClCompile Include="ViewTree.cpp" />
+    <ClCompile Include="ToolWnd\ClassView.cpp" />
+    <ClCompile Include="ToolWnd\FileView.cpp" />
+    <ClCompile Include="ToolWnd\OutputWnd.cpp" />
+    <ClCompile Include="ToolWnd\PropertiesWnd.cpp" />
+    <ClCompile Include="ToolWnd\ViewTree.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MyConfiguration.rc" />

@@ -4,6 +4,7 @@
 
 #include "stdafx.h"
 #include "MyConfiguration.h"
+#include "ChildFrm.h"
 #include "MyConfigurationDoc.h"
 #include "MyConfigurationView.h"
 
@@ -34,6 +35,8 @@ static UINT BASED_CODE files[] =
 
 static UINT BASED_CODE edits[] =
 {
+	ID_TOOLBOX_ARROW,				//箭头
+	ID_TOOLBOX_LOCK,				//锁定
 	ID_TOOLBOX_CUT,					//剪切
 	ID_TOOLBOX_COPY,				//拷贝
 	ID_TOOLBOX_PASTE,				//黏贴
@@ -71,19 +74,13 @@ static UINT BASED_CODE edits[] =
 };
 
 static UINT BASED_CODE base_elements[] =
-{
-	ID_TOOLBOX_ARROW,			//箭头
-	ID_TOOLBOX_LOCK,			//锁定
+{	
 	ID_TOOLBOX_LINE,			//直线
 	ID_TOOLBOX_RECT,			//矩形
 	ID_TOOLBOX_ELLIPSE,			//椭圆
 	ID_TOOLBOX_POLYGON,			//多边形
-	ID_TOOLBOX_SOLIDRECT,		//填充矩形
-	ID_TOOLBOX_SOLIDELLIPSE,	//填充椭圆
-	ID_TOOLBOX_SOLIDPOLYGON,	//填充多边形
 	ID_TOOLBOX_ARC,				//弧
-	ID_TOOLBOX_SOLIDARC,		//扇形
-	ID_TOOLBOX_TEXT			//文字
+	ID_TOOLBOX_TEXT				//文字
 };
 
 static UINT BASED_CODE advance_elements[] =
@@ -118,6 +115,7 @@ const UINT uiLastUserToolBarId = uiFirstUserToolBarId + iMaxUserToolbars - 1;
 
 BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
 	ON_WM_CREATE()
+	ON_WM_MDIACTIVATE()
 
 	//菜单
 	ON_COMMAND(ID_FILE_TOOL_BAR, OnViewFileToolbar)
@@ -132,10 +130,46 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
 	ON_UPDATE_COMMAND_UI(ID_PROP_TOOL_BAR, OnUpdateViewPropToolbar)
 	ON_COMMAND(ID_OUTPUT_TOOL_BAR, OnViewOutputToolbar)
 	ON_UPDATE_COMMAND_UI(ID_OUTPUT_TOOL_BAR, OnUpdateViewOutputToolbar)
+
 	//工具栏 ---文件
+	//新建文件
 	ON_COMMAND(ID_TOOLBOX_NEWFILE, OnToolBoxNewFile)
 	ON_UPDATE_COMMAND_UI(ID_TOOLBOX_NEWFILE, OnUpdateToolBoxNewFile)
+	//打开文件
+	ON_COMMAND(ID_TOOLBOX_OPENFILE, OnToolBoxOpenFile)
+	ON_UPDATE_COMMAND_UI(ID_TOOLBOX_OPENFILE, OnUpdateToolBoxOpenFile)
+	//保存文件
+	ON_COMMAND(ID_TOOLBOX_SAVEFILE, OnToolBoxSaveFile)
+	ON_UPDATE_COMMAND_UI(ID_TOOLBOX_SAVEFILE, OnUpdateToolBoxSaveFile)
 
+
+	//工具栏 ---基本图元
+	//编辑
+	//箭头 
+	ON_COMMAND_EX(ID_TOOLBOX_ARROW, OnToolBox_BaseElement)
+	ON_UPDATE_COMMAND_UI(ID_TOOLBOX_ARROW, OnUpdateToolBox_BaseElement)
+	//工具栏 ---基本图元	
+	// //直线
+	ON_COMMAND_EX(ID_TOOLBOX_LINE, OnToolBox_BaseElement)
+	ON_UPDATE_COMMAND_UI(ID_TOOLBOX_LINE, OnUpdateToolBox_BaseElement)
+	//矩形
+	ON_COMMAND_EX(ID_TOOLBOX_RECT, OnToolBox_BaseElement)
+	ON_UPDATE_COMMAND_UI(ID_TOOLBOX_RECT, OnUpdateToolBox_BaseElement)
+	//椭圆
+	ON_COMMAND_EX(ID_TOOLBOX_ELLIPSE, OnToolBox_BaseElement)
+	ON_UPDATE_COMMAND_UI(ID_TOOLBOX_ELLIPSE, OnUpdateToolBox_BaseElement)
+	//多边形
+	ON_COMMAND_EX(ID_TOOLBOX_POLYGON, OnToolBox_BaseElement)
+	ON_UPDATE_COMMAND_UI(ID_TOOLBOX_POLYGON, OnUpdateToolBox_BaseElement)
+	//弧
+	ON_COMMAND_EX(ID_TOOLBOX_ARC, OnToolBox_BaseElement)
+	ON_UPDATE_COMMAND_UI(ID_TOOLBOX_ARC, OnUpdateToolBox_BaseElement)
+	//文字
+	ON_COMMAND_EX(ID_TOOLBOX_TEXT, OnToolBox_BaseElement)
+	ON_UPDATE_COMMAND_UI(ID_TOOLBOX_TEXT, OnUpdateToolBox_BaseElement)
+
+
+	
 END_MESSAGE_MAP()
 
 
@@ -143,7 +177,8 @@ END_MESSAGE_MAP()
 
 CMainFrame::CMainFrame()
 {
-	// TODO: 在此添加成员初始化代码
+	setOperationType(OPERATION_NONE);
+	m_ToolBoxChoose_Element = OBJECT_ARROR;
 }
 
 CMainFrame::~CMainFrame()
@@ -220,6 +255,10 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// 将文档名和应用程序名称在窗口标题栏上的顺序进行交换。这
 	// 将改进任务栏的可用性，因为显示的文档名带有缩略图。
 	ModifyStyle(0, FWS_PREFIXTITLE); 
+
+	//初始状态 -- 属性栏中 显示 背景属性 内容
+	ShowActiveDocProp();
+
 	return 0;
 }
 
@@ -355,6 +394,43 @@ BOOL CMainFrame::LoadFrame(UINT nIDResource, DWORD dwDefaultStyle, CWnd* pParent
 	}
 
 	return TRUE;
+}
+
+void CMainFrame::OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeactivateWnd)
+{
+	CMDIFrameWndEx::OnMDIActivate(bActivate, pActivateWnd, pDeactivateWnd);
+}
+
+void CMainFrame::ShowProp(UINT toolBoxChoose, CString CaptionText)
+{
+	CMDIFrameWnd* pFrame = (CMDIFrameWnd*)AfxGetApp()->m_pMainWnd;
+	if (pFrame == NULL)
+		return;
+	CMDIChildWnd* pChild = (CMDIChildWnd*)pFrame->GetActiveFrame();
+	if (pChild == NULL)
+		return;
+	CMyConfigurationDoc* pDoc = (CMyConfigurationDoc *)pChild->GetActiveDocument();
+	if (pDoc == NULL)
+		return;
+	if (m_wndProperties)
+	{
+		m_wndProperties.SetWindowText(CaptionText);
+		m_wndProperties.ShowProp(toolBoxChoose, pDoc);
+	}
+}
+
+void CMainFrame::ShowActiveDocProp()
+{
+	//显示当前活动文档的初始属性
+	// 
+	//初始状态 -- 属性栏中 显示 背景属性 内容	
+	//设置文档标题
+	ShowProp(ID_TOOLBOX_BACKGROUND, _T("工程文件及背景属性"));
+}
+void CMainFrame::ShowToolbox(UINT ID)
+{
+	CChildFrame* pChild = (CChildFrame*)((CFrameWnd*)AfxGetApp()->m_pMainWnd)->GetActiveFrame();
+	pChild->setToolBoxChoose_Element(ID);
 }
 
 void CMainFrame::OnViewFileToolbar()
@@ -505,6 +581,9 @@ void CMainFrame::OnUpdateViewOutputToolbar(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck((m_wndOutput.GetStyle() & WS_VISIBLE) != 0);
 }
 
+////////以下是工具栏按钮响应函数
+/**********************************************工具栏-- - 文件 **********************************************/
+//新建文件
 void CMainFrame::OnToolBoxNewFile()
 {
 	// 获取应用程序对象的指针
@@ -513,10 +592,209 @@ void CMainFrame::OnToolBoxNewFile()
 	{
 		// 使用应用程序对象来创建新文档
 		pApp->m_pDocTemplate->OpenDocumentFile(nullptr);
+
+		//初始状态 -- 属性栏中 显示 背景属性 内容
+		ShowActiveDocProp();
 	} 
 }
-
 void CMainFrame::OnUpdateToolBoxNewFile(CCmdUI* pCmdUI)
 {
 	pCmdUI->Enable(TRUE);
+}
+//打开文件
+void CMainFrame::OnToolBoxOpenFile()
+{
+	CMyConfigurationApp* pApp = (CMyConfigurationApp*)AfxGetApp();
+	if (pApp != nullptr)
+	{
+		CFileDialog fileDialog(TRUE, 
+			_T("pro"), 
+			NULL, 
+			OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST, 
+			_T("Project Documents(*.pro)|*.pro|所有文件(*.*)|*.*||"), 
+			this);
+		fileDialog.m_ofn.lpstrTitle = _T("打开"); // 设置对话框标题 
+		if (fileDialog.DoModal() == IDOK) 
+		{
+			pApp->OpenDocumentFile(fileDialog.GetPathName());
+
+			//设置文档标题
+			CMDIFrameWnd* pFrame = (CMDIFrameWnd*)AfxGetApp()->m_pMainWnd;
+			if (pFrame)
+			{
+				CMDIChildWnd* pChild = (CMDIChildWnd*)pFrame->GetActiveFrame();
+				if (pChild != NULL)
+				{
+					CDocument* pDoc = pChild->GetActiveDocument();
+					if (pDoc != NULL)
+					{
+						((CMyConfigurationDoc*)pDoc)->setProjectPathName( fileDialog.GetPathName() );
+						((CMyConfigurationDoc*)pDoc)->setProjectName(fileDialog.GetFileName());
+						pDoc->SetTitle(fileDialog.GetFileName().Left(fileDialog.GetFileName().GetLength() - 4));
+					}
+				}
+			}
+
+			//修改工具栏状态 
+			F_NewFile_Toolbox_ShowStatus();
+
+			ShowActiveDocProp();
+		}
+	}
+}
+void CMainFrame::OnUpdateToolBoxOpenFile(CCmdUI* pCmdUI)
+{
+	pCmdUI->Enable(TRUE);
+}
+//保存文件
+void CMainFrame::OnToolBoxSaveFile()
+{
+	CMDIFrameWnd* pFrame = (CMDIFrameWnd*)AfxGetApp()->m_pMainWnd;
+	CChildFrame* pChild = (CChildFrame*)pFrame->GetActiveFrame();
+	CView* pV = (CView*)pChild->GetActiveView();
+	CDocument* pDoc = pV->GetDocument();
+
+	if (  ((CMyConfigurationDoc*)pDoc)->getProjectPathName() == "")
+	{
+		CString defFileName;
+		defFileName.Format("%s.pro", ((CMyConfigurationDoc*)pDoc)->getProjectName());
+		CFileDialog fileDialog(FALSE,
+			_T("pro"),
+			defFileName,
+			OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST,
+			_T("Project Documents(*.pro)|*.pro|"),
+			this);
+		fileDialog.m_ofn.lpstrTitle = _T("保存"); // 设置对话框标题 
+		if (fileDialog.DoModal() == IDOK)
+		{ 
+			((CMyConfigurationDoc*)pDoc)->OnSaveDocument(fileDialog.GetPathName());
+			((CMyConfigurationDoc*)pDoc)->setProjectPathName(fileDialog.GetPathName());
+		}
+	}
+	else
+	{
+		((CMyConfigurationDoc*)pDoc)->OnSaveDocument(  ((CMyConfigurationDoc*)pDoc)->getProjectPathName()  );
+	}
+	pChild->setChildDocIsSaved(FALSE);
+}
+void CMainFrame::OnUpdateToolBoxSaveFile(CCmdUI* pCmdUI)
+{
+	CMainFrame* pMainFrame = (CMainFrame*)AfxGetApp()->m_pMainWnd;
+	if (pMainFrame->GetMDITabGroups().GetCount() == 0 ||
+		!CMyConfigurationDoc::GetCurrentChildFrame()->getChildDocIsSaved())
+		pCmdUI->Enable(FALSE);
+	else
+		pCmdUI->Enable(TRUE);
+}
+
+
+/**********************************************工具栏-- - 基本图元 **********************************************/
+BOOL CMainFrame::OnToolBox_BaseElement(UINT uID)
+{
+	CChildFrame* pChild = (CChildFrame*)((CFrameWnd*)AfxGetApp()->m_pMainWnd)->GetActiveFrame();
+	pChild->setToolBoxChoose_Element(uID);
+	CView* pV = (CView*)pChild->GetActiveView();
+	CDocument* pDoc = pV->GetDocument();
+
+	switch (uID)
+	{
+		case ID_TOOLBOX_ARROW://箭头
+		{
+			setOperationType(OPERATION_SELECT_SINGLE);
+			m_ToolBoxChoose_Element = OBJECT_ARROR;
+			break;
+		}
+		case ID_TOOLBOX_LINE://直线
+		{
+			setOperationType(OPERATION_DRAWING);
+			m_ToolBoxChoose_Element = OBJECT_BASE_LINE;
+			break;
+		}
+		default:
+			break;
+	}
+	return TRUE;
+}
+void CMainFrame::OnUpdateToolBox_BaseElement(CCmdUI* pCmdUI)
+{
+	switch (pCmdUI->m_nID) 
+	{
+		case ID_TOOLBOX_ARROW:
+		case ID_TOOLBOX_LINE:
+		case ID_TOOLBOX_RECT:
+		case ID_TOOLBOX_ELLIPSE:
+		case ID_TOOLBOX_POLYGON:
+		case ID_TOOLBOX_ARC:
+		case ID_TOOLBOX_TEXT:
+			pCmdUI->Enable(TRUE);
+			break;
+		default:
+			break;
+	}
+
+	CChildFrame* pChild = (CChildFrame*)((CFrameWnd*)AfxGetApp()->m_pMainWnd)->GetActiveFrame();
+	UINT toolBoxSelect = pChild->getToolBoxChoose_Element();
+	if (toolBoxSelect == pCmdUI->m_nID)	 
+		pCmdUI->SetCheck(TRUE);
+	else
+		pCmdUI->SetCheck(FALSE);
+}
+
+
+/***********************以下是用户自定义函数***************************/
+
+void CMainFrame::F_NewFile_Toolbox_ShowStatus()
+{
+	//新建工程文件时工具栏和窗口的显示状态
+	m_wndFiles.ShowWindow(SW_SHOW);
+	m_wndEdits.ShowWindow(SW_SHOW);
+	m_wndBaseElement.ShowWindow(SW_SHOW);
+	m_wndAdvanceElement.ShowWindow(SW_SHOW);
+
+	m_wndOutput.ShowPane(TRUE, FALSE, TRUE);
+	m_wndProperties.ShowPane(TRUE, FALSE, TRUE);
+}
+
+void CMainFrame::F_OpenFile_Toolbox_ShowStatus()
+{
+	//打开工程文件时工具栏和窗口的显示状态
+}
+
+void CMainFrame::F_SaveFile_Toolbox_ShowStatus()
+{
+	//保存工程文件时工具栏和窗口的显示状态
+}
+
+void CMainFrame::F_CloseFile_Toolbox_ShowStatus()
+{
+	//关闭工程文件时工具栏和窗口的显示状态
+	// 获取主框架指针
+	CMainFrame* pMainFrame = (CMainFrame*)AfxGetApp()->m_pMainWnd;
+	if (pMainFrame->GetMDITabGroups().GetCount() == 0)
+	{
+		if (!m_wndEdits.IsFloating())
+			m_wndEdits.ShowWindow(SW_HIDE);
+		else
+			m_wndEdits.ShowPane(FALSE, FALSE, TRUE);
+
+		if (!m_wndBaseElement.IsFloating())
+			m_wndBaseElement.ShowWindow(SW_HIDE);
+		else
+			m_wndBaseElement.ShowPane(FALSE, FALSE, TRUE);
+
+
+		if (!m_wndAdvanceElement.IsFloating())
+			m_wndAdvanceElement.ShowWindow(SW_HIDE);
+		else
+			m_wndAdvanceElement.ShowPane(FALSE, FALSE, TRUE);
+
+		m_wndOutput.ShowPane(FALSE, FALSE, TRUE);
+		m_wndProperties.ShowPane(FALSE, FALSE, TRUE);
+	}
+}
+
+void CMainFrame::F_SwitchFile_Toolbox_ShowStatus()
+{
+	//切换工程文件时工具栏和窗口的显示状态
+	
 }

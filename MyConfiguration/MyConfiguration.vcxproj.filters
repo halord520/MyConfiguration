@@ -31,6 +31,12 @@
     <Filter Include="globe">
       <UniqueIdentifier>{bebae3f3-51f1-4bf8-8bf2-7721380e2c4b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="object">
+      <UniqueIdentifier>{b956008e-6b38-493a-95f6-9f4d2b65009a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ToolWnd">
+      <UniqueIdentifier>{d0273e3c-9ea5-434d-bd00-38e74ea5516c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -60,21 +66,6 @@
     <ClInclude Include="Resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="FileView.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="ClassView.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="ViewTree.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="OutputWnd.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="PropertiesWnd.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="ToolBar\AdvanceElementToolBar.h">
       <Filter>ToolBar</Filter>
     </ClInclude>
@@ -89,6 +80,24 @@
     </ClInclude>
     <ClInclude Include="ToolBar\EditToolBar.h">
       <Filter>ToolBar</Filter>
+    </ClInclude>
+    <ClInclude Include="object\BaseObj.h">
+      <Filter>object</Filter>
+    </ClInclude>
+    <ClInclude Include="ToolWnd\ClassView.h">
+      <Filter>ToolWnd</Filter>
+    </ClInclude>
+    <ClInclude Include="ToolWnd\FileView.h">
+      <Filter>ToolWnd</Filter>
+    </ClInclude>
+    <ClInclude Include="ToolWnd\OutputWnd.h">
+      <Filter>ToolWnd</Filter>
+    </ClInclude>
+    <ClInclude Include="ToolWnd\PropertiesWnd.h">
+      <Filter>ToolWnd</Filter>
+    </ClInclude>
+    <ClInclude Include="ToolWnd\ViewTree.h">
+      <Filter>ToolWnd</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -110,21 +119,6 @@
     <ClCompile Include="MyConfigurationView.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="FileView.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="ClassView.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="ViewTree.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="OutputWnd.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="PropertiesWnd.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="ToolBar\AdvanceElementToolBar.cpp">
       <Filter>ToolBar</Filter>
     </ClCompile>
@@ -139,6 +133,27 @@
     </ClCompile>
     <ClCompile Include="ToolBar\EditToolBar.cpp">
       <Filter>ToolBar</Filter>
+    </ClCompile>
+    <ClCompile Include="object\BaseObj.cpp">
+      <Filter>object</Filter>
+    </ClCompile>
+    <ClCompile Include="ToolWnd\ClassView.cpp">
+      <Filter>ToolWnd</Filter>
+    </ClCompile>
+    <ClCompile Include="ToolWnd\FileView.cpp">
+      <Filter>ToolWnd</Filter>
+    </ClCompile>
+    <ClCompile Include="ToolWnd\OutputWnd.cpp">
+      <Filter>ToolWnd</Filter>
+    </ClCompile>
+    <ClCompile Include="ToolWnd\PropertiesWnd.cpp">
+      <Filter>ToolWnd</Filter>
+    </ClCompile>
+    <ClCompile Include="ToolWnd\ViewTree.cpp">
+      <Filter>ToolWnd</Filter>
+    </ClCompile>
+    <ClCompile Include="MyConfigurationViewOper.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

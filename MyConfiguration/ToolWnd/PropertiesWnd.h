@@ -1,6 +1,9 @@
 
 #pragma once
 
+#include "../MyConfigurationDoc.h"
+#include "../MyConfigurationView.h"
+
 class CPropertiesToolBar : public CMFCToolBar
 {
 public:
@@ -19,7 +22,7 @@ public:
 	CPropertiesWnd();
 
 	void AdjustLayout();
-	void ShowProp(UINT toolBoxChoose);
+	void ShowProp(UINT toolBoxChoose, CMyConfigurationDoc *doc);
 
 // 特性
 public:
@@ -35,7 +38,19 @@ protected:
 	CPropertiesToolBar m_wndToolBar;
 	CMFCPropertyGridCtrl m_wndPropList;
 
-	void ShowProp_Background();
+	void ShowProp_Background(CMyConfigurationDoc* doc);
+	void ShowProp_Line(CMyConfigurationDoc* doc);
+
+	void PropertyChanged_Background(CMFCPropertyGridProperty* pProp,
+									CChildFrame* pChild,
+									CMyConfigurationDoc* pDoc,
+									CMyConfigurationView* pV,
+									int nID, VARIANT strOldValue, CString strNewValue);
+	void PropertyChanged_Line(CMFCPropertyGridProperty* pProp,
+							  CChildFrame* pChild,
+							  CMyConfigurationDoc* pDoc,
+							  CMyConfigurationView* pV,
+							  int nID, VARIANT strOldValue, CString strNewValue);
 
 // 实现
 public:

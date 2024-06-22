@@ -3,8 +3,6 @@
 #include "../Resource.h"
 #include "../MainFrm.h"
 #include "../MyConfiguration.h"
-#include "../MyConfigurationDoc.h"
-#include "../MyConfigurationView.h"
 
 #include "PropertiesWnd.h" 
 
@@ -167,16 +165,23 @@ void CPropertiesWnd::SetPropListFont()
 	m_wndPropList.SetFont(&m_fntPropList);
 }
 
-void CPropertiesWnd::ShowProp(UINT toolBoxChoose)
+void CPropertiesWnd::ShowProp(UINT toolBoxChoose, CMyConfigurationDoc* doc)
 {
-
 	m_wndPropList.RemoveAll();
 	
 	SetPropListFont();
 	switch (toolBoxChoose)
 	{
 		case ID_TOOLBOX_BACKGROUND:
-			ShowProp_Background();
+		{
+			ShowProp_Background(doc);
+			break;
+		}
+		case ID_TOOLBOX_LINE:
+		{
+			ShowProp_Line(doc);
+			break;
+		}
 		default:
 			break;
 	}
@@ -184,23 +189,36 @@ void CPropertiesWnd::ShowProp(UINT toolBoxChoose)
 
 LRESULT CPropertiesWnd::OnPropertyChanged(__in WPARAM wparam, __in LPARAM lparam)
 {
-	CMFCPropertyGridProperty* pProp = reinterpret_cast<CMFCPropertyGridProperty*>(lparam);
+	CMFCPropertyGridProperty* pProp = reinterpret_cast<CMFCPropertyGridProperty*>(lparam); 
 	CMDIFrameWnd* pFrame = (CMDIFrameWnd*)AfxGetApp()->m_pMainWnd;
 	CChildFrame* pChild = (CChildFrame*)pFrame->GetActiveFrame();
 	if (pChild == NULL)
 		return 0;
-	CDocument* pDoc = pChild->GetActiveDocument();
+	CMyConfigurationDoc* pDoc = (CMyConfigurationDoc *)pChild->GetActiveDocument();
 	if (pDoc == NULL)
 		return 0;
 	CMyConfigurationView* pV = (CMyConfigurationView*)pChild->GetActiveView();
 	if (pV == NULL)
 		return 0;
-
 	VARIANT strOldValue = pProp->GetOriginalValue();
 	CString strNewValue = pProp->GetValue();
-	CString msg;
+	
 	int nID = pProp->GetData();
-	switch(nID)
+	if (nID >= ID_PROP_BACKGROUND_NAME && nID <= ID_PROP_BACKGROUND_SHOWTYPE)
+		PropertyChanged_Background(pProp, pChild, pDoc, pV, nID, strOldValue, strNewValue);		//背景属性
+	if (nID >= ID_PROP_LINE_NAME && nID <= ID_PROP_LINE_WIDTH)
+		PropertyChanged_Line(pProp, pChild, pDoc, pV, nID, strOldValue, strNewValue);				//直线属性
+	return 0;
+}
+
+void CPropertiesWnd::PropertyChanged_Background(CMFCPropertyGridProperty* pProp, 
+												CChildFrame* pChild,
+												CMyConfigurationDoc* pDoc,
+												CMyConfigurationView* pV,
+												int nID, VARIANT strOldValue, CString strNewValue)
+{
+	CString msg;
+	switch (nID)
 	{
 		case ID_PROP_BACKGROUND_NAME:
 		{
@@ -209,9 +227,9 @@ LRESULT CPropertiesWnd::OnPropertyChanged(__in WPARAM wparam, __in LPARAM lparam
 			{
 				MessageBox(_T("请输入名称"), _T("错误"), MB_ICONERROR);
 				pProp->SetValue(strOldValue);
-				return 0;
-			}	
-			((CMyConfigurationDoc*)pDoc)->setProjectFileName(strNewValue);		
+				return ;
+			}
+			((CMyConfigurationDoc*)pDoc)->setProjectFileName(strNewValue);
 			break;
 		}
 		case ID_PROP_BACKGROUND_X:
@@ -221,7 +239,7 @@ LRESULT CPropertiesWnd::OnPropertyChanged(__in WPARAM wparam, __in LPARAM lparam
 				msg.Format("输入的尺寸有误!范围(%d--%d)", MIN_PRO_SIZE_X, MAX_PRO_SIZE_X);
 				MessageBox(msg, _T("错误"), MB_ICONERROR);
 				pProp->SetValue(strOldValue);
-				return 0;
+				return ;
 			}
 			((CMyConfigurationDoc*)pDoc)->setProjectWidth(atoi(strNewValue));
 			pV->SetViewSize();
@@ -234,22 +252,22 @@ LRESULT CPropertiesWnd::OnPropertyChanged(__in WPARAM wparam, __in LPARAM lparam
 				msg.Format("输入的尺寸有误!范围(%d--%d)", MIN_PRO_SIZE_Y, MAX_PRO_SIZE_Y);
 				MessageBox(msg, _T("错误"), MB_ICONERROR);
 				pProp->SetValue(strOldValue);
-				return 0;
+				return ;
 			}
 			((CMyConfigurationDoc*)pDoc)->setProjectHeight(atoi(strNewValue));
 			pV->SetViewSize();
 			break;
 		}
 		case ID_PROP_BACKGROUND_COLOR:
-		{ 
+		{
 			COLORREF color = pProp->GetValue().intVal;
 			((CMyConfigurationDoc*)pDoc)->setBkColor(color);
 			break;
 		}
 		case ID_PROP_BACKGROUND_PIC:
 		{
-			CString proPathName = ((CMyConfigurationDoc*)pDoc)->getProjectPathName();			
-			if(proPathName == "")
+			CString proPathName = ((CMyConfigurationDoc*)pDoc)->getProjectPathName();
+			if (proPathName == "")
 				((CMyConfigurationDoc*)pDoc)->setBackPicPathName(strNewValue);
 			else
 			{
@@ -261,7 +279,7 @@ LRESULT CPropertiesWnd::OnPropertyChanged(__in WPARAM wparam, __in LPARAM lparam
 				if (SuffixName == "")
 					break;
 				proPathName = proPathName.Left(npos);
-				
+
 				//设置
 				CString Value = "\\" + targetName + SuffixName;
 				((CMyConfigurationDoc*)pDoc)->setBackPicPathName(Value);
@@ -272,7 +290,7 @@ LRESULT CPropertiesWnd::OnPropertyChanged(__in WPARAM wparam, __in LPARAM lparam
 				copy_File_To_ProFlies((LPSTR)(LPCTSTR)strNewValue, (LPSTR)(LPCTSTR)targetName, BACK_PIC);
 			}
 			break;
-		}		
+		}
 		case ID_PROP_IS_BACKGROUND_PIC:
 		{
 			int isBkPic = 0;
@@ -293,7 +311,7 @@ LRESULT CPropertiesWnd::OnPropertyChanged(__in WPARAM wparam, __in LPARAM lparam
 			else if (strNewValue == "居中")
 				picShowType = CENTER_SHOWTYPE;
 			else
-				return 0;
+				return ;
 			((CMyConfigurationDoc*)pDoc)->setBackPicShowType(picShowType);
 			break;
 		}
@@ -301,13 +319,152 @@ LRESULT CPropertiesWnd::OnPropertyChanged(__in WPARAM wparam, __in LPARAM lparam
 			break;
 	}
 	pChild->setChildDocIsSaved(TRUE);
-	((CMyConfigurationDoc*)pDoc)->UpdateAllViews(NULL);
-	return 0;
+	pDoc->UpdateAllViews(NULL);
 }
 
-void CPropertiesWnd::ShowProp_Background()
+void CPropertiesWnd::PropertyChanged_Line(CMFCPropertyGridProperty* pProp,
+										  CChildFrame* pChild,
+										  CMyConfigurationDoc* pDoc,
+										  CMyConfigurationView* pV,
+										  int nID, VARIANT strOldValue, CString strNewValue)
 {
-	CString proName = _T("");
+	if (pDoc->m_curActiveObject == NULL)
+		return;
+	CClientDC ViewDC(this);
+	pV->OnPrepareDC(&ViewDC);
+
+	CString msg;
+	CPoint ptStart, ptEnd;
+	switch (nID)
+	{
+		case ID_PROP_LINE_NAME:
+		{
+			//名称的改变 
+			if (strNewValue == _T(""))
+			{
+				MessageBox(_T("请输入名称"), _T("错误"), MB_ICONERROR);
+				pProp->SetValue(strOldValue);
+				return;
+			} 
+			((CLineObj*)pDoc->m_curActiveObject)->setName(strNewValue);
+			break;
+		}
+		case ID_PROP_LINE_STARTX:
+		{
+			//坐标改变 startX
+			if (atoi(strNewValue) < 0 || atoi(strNewValue) > MAX_PRO_SIZE_X)
+			{
+				msg.Format("输入的尺寸有误!范围(%d--%d)", 0, MAX_PRO_SIZE_X);
+				MessageBox(msg, _T("错误"), MB_ICONERROR);
+				pProp->SetValue(strOldValue);
+				return;
+			}			
+			ptStart.x = atoi(strNewValue);
+			ptStart.y = ((CLineObj*)pDoc->m_curActiveObject)->getPointStart().y;
+			((CLineObj*)pDoc->m_curActiveObject)->setPointStart(ptStart);
+			pDoc->UpdateAllViews(NULL);
+			break;
+		}
+		case ID_PROP_LINE_STARTY:
+		{
+			//坐标改变 
+			if (atoi(strNewValue) < 0 || atoi(strNewValue) > MAX_PRO_SIZE_Y)
+			{
+				msg.Format("输入的尺寸有误!范围(%d--%d)", 0, MAX_PRO_SIZE_Y);
+				MessageBox(msg, _T("错误"), MB_ICONERROR);
+				pProp->SetValue(strOldValue);
+				return;
+			}
+			ptStart.x = ((CLineObj*)pDoc->m_curActiveObject)->getPointStart().x;
+			ptStart.y = atoi(strNewValue);
+			((CLineObj*)pDoc->m_curActiveObject)->setPointStart(ptStart);
+			pDoc->UpdateAllViews(NULL);
+			break;
+		}
+		case ID_PROP_LINE_ENDX:
+		{
+			//坐标改变 
+			if (atoi(strNewValue) < 0 || atoi(strNewValue) > MAX_PRO_SIZE_X)
+			{
+				msg.Format("输入的尺寸有误!范围(%d--%d)", 0, MAX_PRO_SIZE_X);
+				MessageBox(msg, _T("错误"), MB_ICONERROR);
+				pProp->SetValue(strOldValue);
+				return;
+			}
+			ptEnd.x = atoi(strNewValue);
+			ptEnd.y = ((CLineObj*)pDoc->m_curActiveObject)->getPointEnd().y;
+			((CLineObj*)pDoc->m_curActiveObject)->setPointEnd(ptEnd);
+			pDoc->UpdateAllViews(NULL);
+			break;
+		}
+		case ID_PROP_LINE_ENDY:
+		{
+			//坐标改变 
+			if (atoi(strNewValue) < 0 || atoi(strNewValue) > MAX_PRO_SIZE_Y)
+			{
+				msg.Format("输入的尺寸有误!范围(%d--%d)", 0, MAX_PRO_SIZE_Y);
+				MessageBox(msg, _T("错误"), MB_ICONERROR);
+				pProp->SetValue(strOldValue);
+				return;
+			}
+			ptEnd.x = ((CLineObj*)pDoc->m_curActiveObject)->getPointEnd().x;
+			ptEnd.y = atoi(strNewValue);
+			((CLineObj*)pDoc->m_curActiveObject)->setPointEnd(ptEnd);
+			pDoc->UpdateAllViews(NULL);
+			break;
+		}
+		case ID_PROP_LINE_COLOR:
+		{
+			//颜色改变 
+			COLORREF color = pProp->GetValue().intVal;
+			((CLineObj*)pDoc->m_curActiveObject)->setColor(color);
+			pDoc->UpdateAllViews(NULL);
+			break;
+		}
+		case ID_PROP_LINE_TYPE:
+		{
+			int lineType = PS_SOLID;
+			if (strNewValue == "──────────────────")
+				lineType = PS_SOLID;
+			else if (strNewValue == "- - - - - - - - - - - - - - - ")
+				lineType = PS_DASH;
+			else if (strNewValue == ".................................................")
+				lineType = PS_DOT;
+			else if (strNewValue == "_._._._._._._._._._._._._._._._._")
+				lineType = PS_DASHDOT;
+			else if (strNewValue == "_.._.._.._.._.._.._.._.._.._.._.._.._")
+				lineType = PS_DASHDOTDOT;
+			else
+				lineType = PS_SOLID;
+
+			((CLineObj*)pDoc->m_curActiveObject)->setLineType(lineType);
+			pDoc->UpdateAllViews(NULL);
+			break;
+		}
+		case ID_PROP_LINE_WIDTH:
+		{
+			if (atoi(strNewValue) < 0 || atoi(strNewValue) > MAX_LINE_WIDTH)
+			{
+				msg.Format("输入的尺寸有误!范围(%d--%d)", 0, MAX_LINE_WIDTH);
+				MessageBox(msg, _T("错误"), MB_ICONERROR);
+				pProp->SetValue(strOldValue);
+				return;
+			}
+			((CLineObj*)pDoc->m_curActiveObject)->setLineWidth(atoi(strNewValue));
+			pDoc->UpdateAllViews(NULL);
+			break;
+		}
+		default:
+			break;
+	}
+	pChild->setChildDocIsSaved(TRUE);
+}
+
+void CPropertiesWnd::ShowProp_Background(CMyConfigurationDoc* doc)
+{
+	if (doc == NULL)
+		return;
+	CString proName = _T("新工程文件1");
 	long x_Value = 0, y_Value = 0;
 	COLORREF BkColor = RGB(255,255,255);
 	CString BackPicPathName = "";
@@ -315,44 +472,28 @@ void CPropertiesWnd::ShowProp_Background()
 	int BackPicIs = 0;
 	int BackPicShowType = 0;
 	CString BackPicShowTypeTxt = "";
-	CMDIFrameWnd* pFrame = (CMDIFrameWnd*)AfxGetApp()->m_pMainWnd;
-	if (pFrame)
-	{
-		CMDIChildWnd* pChild = (CMDIChildWnd*)pFrame->GetActiveFrame();
-		if (pChild != NULL)
-		{
-			CDocument* pDoc = pChild->GetActiveDocument();
-			if (pDoc != NULL)
-			{
-				if (((CMyConfigurationDoc*)pDoc)->getProjectFileName() == _T(""))				
-					proName = ((CMyConfigurationDoc*)pDoc)->getProjectName();				
-				else
-					proName = ((CMyConfigurationDoc*)pDoc)->getProjectFileName();
-
-				x_Value = (long)((CMyConfigurationDoc*)pDoc)->getProjectWidth();
-				y_Value = (long)((CMyConfigurationDoc*)pDoc)->getProjectHeight();
-				BkColor = ((CMyConfigurationDoc*)pDoc)->getBkColor();
-				BackPicIs = ((CMyConfigurationDoc*)pDoc)->getisBackPic();
-				if (BackPicIs == 0)
-					isBkPic = "否";
-				else 
-					isBkPic = "是";
-				BackPicPathName = ((CMyConfigurationDoc*)pDoc)->getBackPicPathName();
-				BackPicShowType = ((CMyConfigurationDoc*)pDoc)->getBackPicShowType();
-				if (BackPicShowType == TILE_SHOWTYPE)
-					BackPicShowTypeTxt = "平铺";
-				else if (BackPicShowType == STRETCH_SHOWTYPE)
-					BackPicShowTypeTxt = "拉伸";
-				else
-					BackPicShowTypeTxt = "居中";
-			}
-		}
-	}
+	
+	if (doc->getProjectFileName() == _T(""))
+		proName = doc->getProjectName();
 	else
-		proName = _T("新工程文件1");
+		proName = doc->getProjectFileName();
 
-	 
-
+	x_Value = (long)(doc->getProjectWidth());
+	y_Value = (long)(doc->getProjectHeight());
+	BkColor = doc->getBkColor();
+	BackPicIs = doc->getisBackPic();
+	if (BackPicIs == 0)
+		isBkPic = "否";
+	else 
+		isBkPic = "是";
+	BackPicPathName = doc->getBackPicPathName();
+	BackPicShowType = doc->getBackPicShowType();
+	if (BackPicShowType == TILE_SHOWTYPE)
+		BackPicShowTypeTxt = "平铺";
+	else if (BackPicShowType == STRETCH_SHOWTYPE)
+		BackPicShowTypeTxt = "拉伸";
+	else
+		BackPicShowTypeTxt = "居中";
 
 	m_wndPropList.EnableHeaderCtrl(FALSE);
 	m_wndPropList.EnableDescriptionArea();
@@ -396,4 +537,72 @@ void CPropertiesWnd::ShowProp_Background()
 	pBackGround->AddSubItem(pbkPicShow);
 
 	m_wndPropList.AddProperty(pBackGround);
+}
+
+void CPropertiesWnd::ShowProp_Line(CMyConfigurationDoc* doc)
+{
+	if (doc == NULL)
+		return;
+	if (doc->m_curActiveObject == NULL)
+		return;
+	int     ID			= ((CLineObj *)doc->m_curActiveObject)->getID();
+	CString Name		= ((CLineObj*)doc->m_curActiveObject)->getName();
+	CPoint startPoint	= ((CLineObj*)doc->m_curActiveObject)->getPointStart();
+	CPoint endPoint		= ((CLineObj*)doc->m_curActiveObject)->getPointEnd();
+	COLORREF Color		= ((CLineObj*)doc->m_curActiveObject)->getColor();
+	int lineType		= ((CLineObj*)doc->m_curActiveObject)->getLineType();
+	CString cs_lineType;
+	if (lineType == PS_SOLID)
+		cs_lineType = _T("──────────────────");
+	else if (lineType == PS_DASH)
+		cs_lineType = _T("- - - - - - - - - - - - - - - ");
+	else if (lineType == PS_DOT)
+		cs_lineType = _T(".................................................");
+	else if (lineType == PS_DASHDOT)
+		cs_lineType = _T("_._._._._._._._._._._._._._._._._");
+	else if (lineType == PS_DASHDOTDOT)
+		cs_lineType = _T("_.._.._.._.._.._.._.._.._.._.._.._.._");
+	else
+		cs_lineType = _T("──────────────────");
+
+	int lineWidth		= ((CLineObj*)doc->m_curActiveObject)->getLineWidth();
+
+
+	m_wndPropList.EnableHeaderCtrl(FALSE);
+	m_wndPropList.EnableDescriptionArea();
+	m_wndPropList.SetVSDotNetLook();
+	m_wndPropList.MarkModifiedProperties();
+
+	//1
+	CMFCPropertyGridProperty* pGroupProject = new CMFCPropertyGridProperty(_T("基本属性"));
+
+	CMFCPropertyGridProperty* lineID = new CMFCPropertyGridProperty(_T("ID"), (long)ID, _T("指定该直线的ID(系统自动分配)"));
+	lineID->AllowEdit(FALSE);
+	pGroupProject->AddSubItem(lineID);
+
+	pGroupProject->AddSubItem(new CMFCPropertyGridProperty(_T("名称"), (_variant_t)Name, _T("指定该直线的名称"), ID_PROP_LINE_NAME));
+	pGroupProject->AddSubItem(new CMFCPropertyGridProperty(_T("起始坐标(x)"), (long)startPoint.x, _T("指定该直线起始的坐标位置(x)"), ID_PROP_LINE_STARTX, NULL, NULL, _T("0123456789")));
+	pGroupProject->AddSubItem(new CMFCPropertyGridProperty(_T("起始坐标(y)"), (long)startPoint.y, _T("指定该直线起始的坐标位置(y)"), ID_PROP_LINE_STARTY, NULL, NULL, _T("0123456789")));
+	pGroupProject->AddSubItem(new CMFCPropertyGridProperty(_T("结束坐标(x)"), (long)endPoint.x, _T("指定该直线结束的坐标位置(x)"), ID_PROP_LINE_ENDX, NULL, NULL, _T("0123456789")));
+	pGroupProject->AddSubItem(new CMFCPropertyGridProperty(_T("结束坐标(y)"), (long)endPoint.y, _T("指定该直线结束的坐标位置(y)"), ID_PROP_LINE_ENDY, NULL, NULL, _T("0123456789")));
+
+	CMFCPropertyGridColorProperty* pColorProp = new CMFCPropertyGridColorProperty(_T("颜色"), Color, NULL, _T("指定该直线的颜色"), ID_PROP_LINE_COLOR);
+	// 自定义绘制颜色的方式
+	pColorProp->AllowEdit(FALSE);
+	pColorProp->EnableOtherButton(_T("其他"));
+	pGroupProject->AddSubItem(pColorProp);
+
+	CMFCPropertyGridProperty* pLineType = new CMFCPropertyGridProperty(_T("线型"), (_variant_t)cs_lineType, _T("指定该直线的线型"), ID_PROP_LINE_TYPE);
+	pLineType->AddOption(_T("──────────────────"));
+	pLineType->AddOption(_T("- - - - - - - - - - - - - - - "));
+	pLineType->AddOption(_T("................................................."));
+	pLineType->AddOption(_T("_._._._._._._._._._._._._._._._._"));
+	pLineType->AddOption(_T("_.._.._.._.._.._.._.._.._.._.._.._.._"));
+	pLineType->AllowEdit(FALSE);
+	pGroupProject->AddSubItem(pLineType);
+
+	pGroupProject->AddSubItem(new CMFCPropertyGridProperty(_T("线宽"), (long)lineWidth, _T("指定该直线的线宽"), ID_PROP_LINE_WIDTH, NULL, NULL, _T("0123456789")));
+
+	m_wndPropList.AddProperty(pGroupProject);
+
 }

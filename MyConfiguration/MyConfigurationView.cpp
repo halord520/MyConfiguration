@@ -19,27 +19,48 @@
 
 // CMyConfigurationView
 
-IMPLEMENT_DYNCREATE(CMyConfigurationView, CView)
+IMPLEMENT_DYNCREATE(CMyConfigurationView, CScrollView)
 
-BEGIN_MESSAGE_MAP(CMyConfigurationView, CView)
+BEGIN_MESSAGE_MAP(CMyConfigurationView, CScrollView)
 	// 标准打印命令
-	ON_COMMAND(ID_FILE_PRINT, &CView::OnFilePrint)
-	ON_COMMAND(ID_FILE_PRINT_DIRECT, &CView::OnFilePrint)
+	ON_COMMAND(ID_FILE_PRINT, &CScrollView::OnFilePrint)
+	ON_COMMAND(ID_FILE_PRINT_DIRECT, &CScrollView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CMyConfigurationView::OnFilePrintPreview)
 	ON_WM_CONTEXTMENU()
+	ON_WM_MOUSEHWHEEL()
+	ON_WM_MOUSEWHEEL()
+	ON_WM_MOUSEMOVE()
+	ON_WM_KEYDOWN()
+	ON_WM_KEYUP()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_LBUTTONUP()
+	ON_WM_LBUTTONDBLCLK()
+	ON_WM_RBUTTONDOWN()
 	ON_WM_RBUTTONUP()
+	ON_WM_SETFOCUS()
+	ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 // CMyConfigurationView 构造/析构
 
 CMyConfigurationView::CMyConfigurationView()
 {
-	// TODO: 在此处添加构造代码
-
+	m_MousePushDown = FALSE;
+	m_brBackGround.DeleteObject();
 }
 
 CMyConfigurationView::~CMyConfigurationView()
 {
+	m_brBackGround.DeleteObject();
+}
+
+void CMyConfigurationView::SetViewSize()
+{
+	CSize sizeDoc;
+	sizeDoc.cx = GetDocument()->getProjectWidth();
+	sizeDoc.cy = GetDocument()->getProjectHeight();
+ 
+	SetScrollSizes(MM_TEXT, sizeDoc);
 }
 
 BOOL CMyConfigurationView::PreCreateWindow(CREATESTRUCT& cs)
@@ -47,19 +68,97 @@ BOOL CMyConfigurationView::PreCreateWindow(CREATESTRUCT& cs)
 	// TODO: 在此处通过修改
 	//  CREATESTRUCT cs 来修改窗口类或样式
 
-	return CView::PreCreateWindow(cs);
+	return CScrollView::PreCreateWindow(cs);
+}
+
+void CMyConfigurationView::OnInitialUpdate()
+{
+	m_brBackGround.CreateSolidBrush(GetDocument()->getBkColor());
+	CScrollView::OnInitialUpdate();
+}
+
+void CMyConfigurationView::OnUpdate(CView* /*pSender*/, LPARAM /*lHint*/, CObject* /*pHint*/)
+{
+	m_brBackGround.DeleteObject();
+	m_brBackGround.CreateSolidBrush(GetDocument()->getBkColor());
+
+	SetViewSize();
+	Invalidate();
+}
+
+void CMyConfigurationView::OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt)
+{
+	CScrollView::OnMouseHWheel(nFlags, zDelta, pt);
+}
+
+BOOL CMyConfigurationView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
+{
+	return CScrollView::OnMouseWheel(nFlags, zDelta, pt);
+}
+
+BOOL CMyConfigurationView::OnScroll(UINT nScrollCode, UINT nPos, BOOL bDoScroll)
+{ 
+	return CScrollView::OnScroll(nScrollCode, nPos, bDoScroll);
 }
 
 // CMyConfigurationView 绘制
 
-void CMyConfigurationView::OnDraw(CDC* /*pDC*/)
+void CMyConfigurationView::OnDraw(CDC* pDC)
 {
 	CMyConfigurationDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	if (!pDoc)
-		return;
+		return;	
+	CRect rect;
+	rect.left = 0;
+	rect.top = 0;
+	rect.right = pDoc->getProjectWidth();
+	rect.bottom = pDoc->getProjectHeight();
+	if (!rect.IsRectEmpty() && !pDC->IsPrinting())                  
+	{
+		pDC->FillRect(rect, &m_brBackGround);		// draw background
 
-	// TODO: 在此处为本机数据添加绘制代码
+		if (GetDocument()->getisBackPic())			// show backPic
+		{
+			CString picPath;
+			CString proPathName = ((CMyConfigurationDoc*)pDoc)->getProjectPathName();
+			if (proPathName == "")
+				picPath = GetDocument()->getBackPicPathName();
+			else
+			{
+				int npos = proPathName.ReverseFind('\\');
+				proPathName = proPathName.Left(npos);
+				picPath = proPathName + "\\" + GetDocument()->getBackPicPathName();
+			}
+			Image* m_image;
+			Graphics graphics = (pDC->GetSafeHdc()); // Create a GDI+ graphics object
+			WCHAR* wdetail = picPath.AllocSysString();
+			m_image = Image::FromFile(wdetail);
+			graphics.DrawImage(m_image, Rect(0, 0, rect.right, rect.bottom));
+			delete m_image;
+			::SysFreeString(wdetail);
+		}
+	}
+
+	//以下是object
+	POSITION pos = (GetDocument()->m_ElementObList).GetHeadPosition();
+	while (pos != NULL)
+	{
+		CBaseObj* pObj = (CBaseObj * )(GetDocument()->m_ElementObList).GetNext(pos);
+		int objecType = pObj->getObjectType();
+		switch (objecType)
+		{
+			case OBJECT_BASE_LINE:
+			{
+				((CLineObj*)pObj)->Draw(pDC);
+				if(((CLineObj*)GetDocument()->m_curActiveObject) == pObj)
+					((CLineObj*)GetDocument()->m_curActiveObject)->DrawFocus(pDC, 100);
+				break;
+			}
+			default:
+				break;
+		}
+	}
 }
 
 
@@ -87,13 +186,7 @@ void CMyConfigurationView::OnBeginPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
 void CMyConfigurationView::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
 {
 	// TODO: 添加打印后进行的清理过程
-}
-
-void CMyConfigurationView::OnRButtonUp(UINT /* nFlags */, CPoint point)
-{
-	ClientToScreen(&point);
-	OnContextMenu(this, point);
-}
+} 
 
 void CMyConfigurationView::OnContextMenu(CWnd* /* pWnd */, CPoint point)
 {
@@ -108,12 +201,12 @@ void CMyConfigurationView::OnContextMenu(CWnd* /* pWnd */, CPoint point)
 #ifdef _DEBUG
 void CMyConfigurationView::AssertValid() const
 {
-	CView::AssertValid();
+	CScrollView::AssertValid();
 }
 
 void CMyConfigurationView::Dump(CDumpContext& dc) const
 {
-	CView::Dump(dc);
+	CScrollView::Dump(dc);
 }
 
 CMyConfigurationDoc* CMyConfigurationView::GetDocument() const // 非调试版本是内联的
@@ -125,3 +218,7 @@ CMyConfigurationDoc* CMyConfigurationView::GetDocument() const // 非调试版本是内
 
 
 // CMyConfigurationView 消息处理程序
+
+
+
+

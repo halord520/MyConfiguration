@@ -5,6 +5,8 @@
 #include "stdafx.h"
 #include "MainFrm.h"
 
+#include "ChildFrm.h"
+
 // SHARED_HANDLERS 可以在实现预览、缩略图和搜索筛选器句柄的
 // ATL 项目中进行定义，并允许与该项目共享文档代码。
 #ifndef SHARED_HANDLERS
@@ -31,12 +33,32 @@ END_MESSAGE_MAP()
 
 CMyConfigurationDoc::CMyConfigurationDoc()
 {
-	// TODO: 在此添加一次性构造代码
+	m_ProjectName = _T("");
+	m_ProjectPathName = _T("");
+	m_ProjectFileName = _T("");
+	m_ProjectWidth = 1920;
+	m_ProjectHeight = 1080;
+	m_BkColor = RGB(255, 255, 255);
+	m_isBackPic = 0;			//是否要显示背景图片
+	m_BackPicPathName = _T("");	//背景图片的路径  （绝对路径的名字）
+	m_BackPicName = _T("");		//背景图片的名字  （去掉绝对路径后的名字）
+	m_BackPicShowType  = 0;		//显示背景图片的方式  0--平铺  1--拉伸 2--居中
 
+	m_ElementObList.RemoveAll();
+	m_TotalObjectNum = 0;
 }
 
 CMyConfigurationDoc::~CMyConfigurationDoc()
 {
+	POSITION pos = m_ElementObList.GetHeadPosition();
+	while (pos != NULL)
+	{
+		CObject* pObj = m_ElementObList.GetNext(pos);
+		delete pObj;
+		pObj = NULL;
+	}
+
+	m_ElementObList.RemoveAll();
 }
 
 BOOL CMyConfigurationDoc::OnNewDocument()
@@ -44,14 +66,45 @@ BOOL CMyConfigurationDoc::OnNewDocument()
 	if (!CDocument::OnNewDocument())
 		return FALSE;
 
-	((CMainFrame*)AfxGetApp()->m_pMainWnd)->m_wndFiles.ShowWindow(SW_SHOW);
-	((CMainFrame*)AfxGetApp()->m_pMainWnd)->m_wndEdits.ShowWindow(SW_SHOW);
-	((CMainFrame*)AfxGetApp()->m_pMainWnd)->m_wndBaseElement.ShowWindow(SW_SHOW);
-	((CMainFrame*)AfxGetApp()->m_pMainWnd)->m_wndAdvanceElement.ShowWindow(SW_SHOW);
+	((CMainFrame*)AfxGetApp()->m_pMainWnd)->F_NewFile_Toolbox_ShowStatus();
+	return TRUE;
+}
 
-	((CMainFrame*)AfxGetApp()->m_pMainWnd)->m_wndOutput.ShowPane(TRUE, FALSE, TRUE);
-	((CMainFrame*)AfxGetApp()->m_pMainWnd)->m_wndProperties.ShowPane(TRUE, FALSE, TRUE);
+BOOL CMyConfigurationDoc::OnSaveDocument(LPCTSTR lpszPathName)
+{
+	m_ProjectName = lpszPathName;
+	m_ProjectName = m_ProjectName.Left( m_ProjectName.GetLength() - 4);
+	int npos = m_ProjectName.ReverseFind('\\');
+	m_ProjectName = m_ProjectName.Right(m_ProjectName.GetLength() - npos - 1);
+	SetTitle(m_ProjectName); 
 
+	CString proPathName = getProjectPathName();
+	CString backPicName = getBackPicPathName();
+	if (proPathName == "" && backPicName != "")
+	{
+		//新文件 拷贝背景图片
+		proPathName = lpszPathName;
+		CString targetName = BACK_PIC_NAME;
+		CString SuffixName = "";	//后缀名
+		int npos = proPathName.ReverseFind('\\');
+		SuffixName = backPicName.Right(backPicName.GetLength() - npos - 1);
+		SuffixName = SuffixName.Right(4); 
+		proPathName = proPathName.Left(npos);
+
+		//设置
+		CString Value = "\\" + targetName + SuffixName;
+		setBackPicPathName(Value);		
+		//拷贝
+		targetName = proPathName + "\\" + targetName + SuffixName;
+		copy_File_To_ProFlies((LPSTR)(LPCTSTR)backPicName, (LPSTR)(LPCTSTR)targetName, BACK_PIC);
+	}
+	 
+	((CMainFrame*)AfxGetApp()->m_pMainWnd)->ShowActiveDocProp();
+
+
+	// 调用基类的OnSaveDocument来保存文档
+	if (!CDocument::OnSaveDocument(lpszPathName))
+		return FALSE;
 	return TRUE;
 }
 
@@ -60,32 +113,23 @@ void CMyConfigurationDoc::OnCloseDocument()
 	// 调用基类的OnCloseDocument来完成关闭文档的过程
 	CDocument::OnCloseDocument();
 
-	// 获取主框架指针
-	CMainFrame* pMainFrame = (CMainFrame*)AfxGetApp()->m_pMainWnd;
-	if (pMainFrame->GetMDITabGroups().GetCount() == 0)
-	{
-		if (!((CMainFrame*)AfxGetApp()->m_pMainWnd)->m_wndEdits.IsFloating())
-			((CMainFrame*)AfxGetApp()->m_pMainWnd)->m_wndEdits.ShowWindow(SW_HIDE);
-		else
-			((CMainFrame*)AfxGetApp()->m_pMainWnd)->m_wndEdits.ShowPane(FALSE, FALSE, TRUE);
-
-
-		if (!((CMainFrame*)AfxGetApp()->m_pMainWnd)->m_wndBaseElement.IsFloating())
-			((CMainFrame*)AfxGetApp()->m_pMainWnd)->m_wndBaseElement.ShowWindow(SW_HIDE);
-		else
-			((CMainFrame*)AfxGetApp()->m_pMainWnd)->m_wndBaseElement.ShowPane(FALSE, FALSE, TRUE);
-
-
-		if (!((CMainFrame*)AfxGetApp()->m_pMainWnd)->m_wndAdvanceElement.IsFloating())
-			((CMainFrame*)AfxGetApp()->m_pMainWnd)->m_wndAdvanceElement.ShowWindow(SW_HIDE);
-		else
-			((CMainFrame*)AfxGetApp()->m_pMainWnd)->m_wndAdvanceElement.ShowPane(FALSE, FALSE, TRUE);
-
-		((CMainFrame*)AfxGetApp()->m_pMainWnd)->m_wndOutput.ShowPane(FALSE, FALSE, TRUE);
-		((CMainFrame*)AfxGetApp()->m_pMainWnd)->m_wndProperties.ShowPane(FALSE, FALSE, TRUE);
-	}
+	((CMainFrame*)AfxGetApp()->m_pMainWnd)->F_CloseFile_Toolbox_ShowStatus();
+	//
+	((CMainFrame*)AfxGetApp()->m_pMainWnd)->ShowActiveDocProp();
 }
- 
+
+CDocument*CMyConfigurationDoc::GetCurrentDoc()
+{
+	CChildFrame* pChild = (CChildFrame*)((CFrameWnd*)AfxGetApp()->m_pMainWnd)->GetActiveFrame();
+	CDocument* pDoc = pChild->GetActiveDocument();
+	return pDoc;
+}
+
+CChildFrame* CMyConfigurationDoc::GetCurrentChildFrame()
+{
+	CChildFrame* pChild = (CChildFrame*)((CFrameWnd*)AfxGetApp()->m_pMainWnd)->GetActiveFrame();
+	return pChild;
+}
 
 // CMyConfigurationDoc 序列化
 
@@ -93,13 +137,96 @@ void CMyConfigurationDoc::Serialize(CArchive& ar)
 {
 	if (ar.IsStoring())
 	{
-		// TODO: 在此添加存储代码
+		ar << m_ProjectFileName;
+		ar << m_ProjectWidth;
+		ar << m_ProjectHeight;
+		ar << m_BkColor;
+		ar << m_isBackPic;
+		ar << m_BackPicPathName;
+		ar << m_BackPicName;
+		ar << m_BackPicShowType;
+		ar << m_TotalObjectNum;
+		 
+		POSITION pos = m_ElementObList.GetHeadPosition();
+		while (pos != NULL)
+		{
+			CObject* pObj = m_ElementObList.GetNext(pos);
+			ar << ((CBaseObj*)pObj)->getObjectType();
+			((CBaseObj*)pObj)->Serialize(ar);
+		}
 	}
 	else
 	{
-		// TODO: 在此添加加载代码
+		ar >> m_ProjectFileName;
+		ar >> m_ProjectWidth;
+		ar >> m_ProjectHeight;
+		ar >> m_BkColor;
+		ar >> m_isBackPic;
+		ar >> m_BackPicPathName;
+		ar >> m_BackPicName;
+		ar >> m_BackPicShowType;
+		ar >> m_TotalObjectNum;
+
+		int objectType = 0;
+		CBaseObj* pObj;
+		for (int i = 0; i < m_TotalObjectNum; i++)
+		{
+			ar >> objectType;
+			switch (objectType)
+			{
+				case OBJECT_BASE_LINE:
+				{
+					pObj = new CBaseObj();
+					pObj->setObjectType(OBJECT_BASE_LINE);
+					pObj->Serialize(ar);
+					m_ElementObList.AddTail(pObj);
+					break;
+				}
+				default:
+					break;
+			}
+		}		 
 	}
 }
+
+void CMyConfigurationDoc::SetTitle(LPCTSTR lpszTitle)
+{
+	if (m_ProjectName.IsEmpty())
+		m_ProjectName = IDS_NONAME;
+	else
+		m_ProjectName = lpszTitle;
+
+	int npos = m_ProjectName.Find(_T(".pro"));
+	if(npos >= 0)
+		m_ProjectName = m_ProjectName.Left(npos);
+	CDocument::SetTitle(m_ProjectName);
+}
+
+CBaseObj* CMyConfigurationDoc::GetActiveObj(CPoint point, UINT uZoomRate)
+{
+	CBaseObj* pObj;
+	POSITION pos = m_ElementObList.GetHeadPosition();
+	
+	while (pos != NULL) 
+	{
+		pObj = (CBaseObj*)m_ElementObList.GetNext(pos);
+		int objectType = pObj->getObjectType();
+		switch (objectType)
+		{
+			case OBJECT_BASE_LINE:
+			{
+				if (  ((CLineObj*)pObj)->InSelectArea(point, uZoomRate)  )
+					return pObj;
+				break;
+			}
+			default:
+				break;
+		}		
+	}
+	return NULL;
+}
+
+
 
 #ifdef SHARED_HANDLERS
 
@@ -168,6 +295,3 @@ void CMyConfigurationDoc::Dump(CDumpContext& dc) const
 	CDocument::Dump(dc);
 }
 #endif //_DEBUG
-
-
-// CMyConfigurationDoc 命令

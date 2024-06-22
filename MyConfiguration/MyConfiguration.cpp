@@ -104,6 +104,12 @@ BOOL CMyConfigurationApp::InitInstance()
 	InitKeyboardManager();
 
 	InitTooltipManager();
+
+	//³õÊ¼»¯GDI+
+	Gdiplus::GdiplusStartupInput m_gdiplusStartupInput;
+	ULONG_PTR m_pGdiToken;
+	Gdiplus::GdiplusStartup(&m_pGdiToken, &m_gdiplusStartupInput, NULL);
+
 	CMFCToolTipInfo ttParams;
 	ttParams.m_bVislManagerTheme = TRUE;
 	theApp.GetTooltipManager()->SetTooltipParams(AFX_TOOLTIP_TYPE_ALL,
