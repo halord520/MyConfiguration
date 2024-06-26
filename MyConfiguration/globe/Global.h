@@ -15,12 +15,15 @@
 #define IDS_NONAME	"新工程文件"	
 #define BACK_PIC_NAME	"backpic"
 #define OBJ_LINE_NAME	"line"
+#define OBJ_RECT_NAME	"rect"
 
 #define MAX_PRO_SIZE_X	19600
 #define MIN_PRO_SIZE_X	800
 #define MAX_PRO_SIZE_Y	10800
 #define MIN_PRO_SIZE_Y	600
 #define MAX_LINE_WIDTH	50
+#define MIN_RECT_ROUND	0
+#define MAX_RECT_ROUND	100
 
 #define RGB_CHOOSE		RGB(128,128,128)
 #define CORNER_RECT		4
@@ -36,8 +39,15 @@ typedef enum _SELECT_POSITION_AREA				//选择的方位
 {
 	OUT_OF_RECT = 0,							//在选择之外
 	IN_RECT,
+	IN_EDIT_RECT,
 	RIGHT_BOTTOM_CORNER,
-	LEFT_TOP_CORNER								
+	LEFT_TOP_CORNER,
+	TOP_RIGHT_CORNER,
+	BOTTOM_LEFT_CORNER,
+	LEFT_BORDER,
+	TOP_BORDER,
+	RIGHT_BORDER,
+	BOTTOM_BORDER
 }SELECT_POSITION_AREA;
 
 typedef enum _FILE_TYPE							//文件类型
@@ -57,13 +67,17 @@ typedef enum _OPERATION_TYPE					//操作类型
 	OPERATION_NONE = 0,							//无
 	OPERATION_DRAWING,							//开始画图元操作		
 	OPERATION_DRAWEND,							//结束画图元操作	
-	OPERATION_SELECT_SINGLE						//鼠标单选图元操作	
+	OPERATION_SELECT_OBJECT,					//鼠标选择图元操作 单选
+	OPERATION_SELECT_OBJECT_MULT,				//鼠标选择图元操作 多选	
+	OPERATION_MODIFYING_OBJ_SINGLE,				//鼠标开始改变图元操作	
+	OPERATION_MODIFYED_OBJ_MULT					//鼠标结束改变图元操作	多选	
 }OPERATION_TYPE;
 
 typedef enum _OBJECT_TYPE						//图元类型 ( 包括 基本图元 和 高级图元 )
 {
 	OBJECT_ARROR = 0,							//无
-	OBJECT_BASE_LINE							//直线
+	OBJECT_BASE_LINE,							//直线
+	OBJECT_BASE_RECT							//矩形
 }OBJECT_TYPE;
 
 class Global  

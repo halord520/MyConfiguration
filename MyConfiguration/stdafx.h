@@ -55,4 +55,5 @@ using namespace Gdiplus;
 //object
 #include "./object/BaseObj.h"
 #include "./object/line.h"
+#include "./object/rect.h"
 

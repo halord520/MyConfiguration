@@ -17,6 +17,15 @@ public:
 	DECLARE_SERIAL(CBaseObj);
 
 	virtual void Serialize(CArchive& ar);
+
+	int InSelectArea(CPoint point, UINT uZoomRate);
+	BOOL GetBorderRect(CRect rect, UINT uZoomRate);
+	void SetPoint_startDrawingOperation_LBtnDown(CPoint point);
+	void SetPoint_startDrawingOperation_MouseMove(CPoint point);
+	void SetPoint_startDrawingOperation_LBtnUp(CPoint point, int ID);
+	void SetPoint_selectObject_Mult_MouseMove(CPoint pointMove, CPoint point);
+	void SetPoint_startModifyOperation_MouseMove(CPoint pointMove, CPoint point, int AreaType);
+
 	virtual void Draw(CDC* pDC, int nDrawMode = R2_COPYPEN, UINT uZoomRate = 100);
 	void DrawFocus(CDC* pDC, UINT uZoomRate);
 

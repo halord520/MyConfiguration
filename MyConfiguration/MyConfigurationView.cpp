@@ -46,6 +46,8 @@ END_MESSAGE_MAP()
 CMyConfigurationView::CMyConfigurationView()
 {
 	m_MousePushDown = FALSE;
+	m_pointMove = { 0,0 };
+	m_rcSelect_Mult = {0,0,0,0};
 	m_brBackGround.DeleteObject();
 }
 
@@ -145,19 +147,10 @@ void CMyConfigurationView::OnDraw(CDC* pDC)
 	while (pos != NULL)
 	{
 		CBaseObj* pObj = (CBaseObj * )(GetDocument()->m_ElementObList).GetNext(pos);
-		int objecType = pObj->getObjectType();
-		switch (objecType)
-		{
-			case OBJECT_BASE_LINE:
-			{
-				((CLineObj*)pObj)->Draw(pDC);
-				if(((CLineObj*)GetDocument()->m_curActiveObject) == pObj)
-					((CLineObj*)GetDocument()->m_curActiveObject)->DrawFocus(pDC, 100);
-				break;
-			}
-			default:
-				break;
-		}
+	
+		pObj->Draw(pDC);
+		if((GetDocument()->m_curActiveObject) == pObj)
+			(GetDocument()->m_curActiveObject)->DrawFocus(pDC, 100);
 	}
 }
 

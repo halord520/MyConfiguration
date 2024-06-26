@@ -54,7 +54,9 @@ public:
 
 
 	int InSelectArea(CPoint point, UINT uZoomRate);
+	BOOL GetBorderRect(CRect rect, UINT uZoomRate);
 	BOOL PointInBorder(CPoint point, UINT uZoomRate);
+	void ClearDraw(CWnd* wnd, CDC* pDC, UINT uZoomRate);
 
 public:                                    
 	const CBaseObj& operator=( CBaseObj& pObj );

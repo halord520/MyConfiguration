@@ -149,7 +149,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
 	ON_COMMAND_EX(ID_TOOLBOX_ARROW, OnToolBox_BaseElement)
 	ON_UPDATE_COMMAND_UI(ID_TOOLBOX_ARROW, OnUpdateToolBox_BaseElement)
 	//工具栏 ---基本图元	
-	// //直线
+	//直线
 	ON_COMMAND_EX(ID_TOOLBOX_LINE, OnToolBox_BaseElement)
 	ON_UPDATE_COMMAND_UI(ID_TOOLBOX_LINE, OnUpdateToolBox_BaseElement)
 	//矩形
@@ -401,7 +401,7 @@ void CMainFrame::OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeacti
 	CMDIFrameWndEx::OnMDIActivate(bActivate, pActivateWnd, pDeactivateWnd);
 }
 
-void CMainFrame::ShowProp(UINT toolBoxChoose, CString CaptionText)
+void CMainFrame::ShowProp(int choose_Element)
 {
 	CMDIFrameWnd* pFrame = (CMDIFrameWnd*)AfxGetApp()->m_pMainWnd;
 	if (pFrame == NULL)
@@ -409,14 +409,43 @@ void CMainFrame::ShowProp(UINT toolBoxChoose, CString CaptionText)
 	CMDIChildWnd* pChild = (CMDIChildWnd*)pFrame->GetActiveFrame();
 	if (pChild == NULL)
 		return;
-	CMyConfigurationDoc* pDoc = (CMyConfigurationDoc *)pChild->GetActiveDocument();
+	CMyConfigurationDoc* pDoc = (CMyConfigurationDoc*)pChild->GetActiveDocument();
 	if (pDoc == NULL)
 		return;
-	if (m_wndProperties)
+	if (!m_wndProperties)
+		return;
+
+	switch (choose_Element)
 	{
-		m_wndProperties.SetWindowText(CaptionText);
-		m_wndProperties.ShowProp(toolBoxChoose, pDoc);
-	}
+		case ID_TOOLBOX_BACKGROUND:
+		{
+			m_wndProperties.SetWindowText(_T("工程文件及背景属性"));
+			m_wndProperties.ShowProp(ID_TOOLBOX_BACKGROUND, pDoc);
+			break;
+		}
+		case IDB_BASEELEMENT:
+		{
+			m_wndProperties.SetWindowText(_T("选择了多个图元"));
+			m_wndProperties.ShowProp(IDB_BASEELEMENT, pDoc);
+			break;
+		}
+		case OBJECT_BASE_LINE:
+		case ID_TOOLBOX_LINE:
+		{
+			m_wndProperties.SetWindowText(_T("直线属性"));
+			m_wndProperties.ShowProp(ID_TOOLBOX_LINE, pDoc);
+			break;
+		}
+		case OBJECT_BASE_RECT:
+		case ID_TOOLBOX_RECT:
+		{
+			m_wndProperties.SetWindowText(_T("矩形属性"));
+			m_wndProperties.ShowProp(ID_TOOLBOX_RECT, pDoc);
+			break;
+		}
+	default:
+		break;
+	} 
 }
 
 void CMainFrame::ShowActiveDocProp()
@@ -425,7 +454,7 @@ void CMainFrame::ShowActiveDocProp()
 	// 
 	//初始状态 -- 属性栏中 显示 背景属性 内容	
 	//设置文档标题
-	ShowProp(ID_TOOLBOX_BACKGROUND, _T("工程文件及背景属性"));
+	ShowProp(ID_TOOLBOX_BACKGROUND);
 }
 void CMainFrame::ShowToolbox(UINT ID)
 {
@@ -700,7 +729,7 @@ BOOL CMainFrame::OnToolBox_BaseElement(UINT uID)
 	{
 		case ID_TOOLBOX_ARROW://箭头
 		{
-			setOperationType(OPERATION_SELECT_SINGLE);
+			setOperationType(OPERATION_SELECT_OBJECT);
 			m_ToolBoxChoose_Element = OBJECT_ARROR;
 			break;
 		}
@@ -708,6 +737,12 @@ BOOL CMainFrame::OnToolBox_BaseElement(UINT uID)
 		{
 			setOperationType(OPERATION_DRAWING);
 			m_ToolBoxChoose_Element = OBJECT_BASE_LINE;
+			break;
+		}
+		case ID_TOOLBOX_RECT://矩形
+		{
+			setOperationType(OPERATION_DRAWING);
+			m_ToolBoxChoose_Element = OBJECT_BASE_RECT;
 			break;
 		}
 		default:
@@ -742,6 +777,11 @@ void CMainFrame::OnUpdateToolBox_BaseElement(CCmdUI* pCmdUI)
 
 
 /***********************以下是用户自定义函数***************************/
+void CMainFrame::F_SetProjectSaved(BOOL isSaved)
+{ 
+	CChildFrame* pChild = (CChildFrame*)((CFrameWnd*)AfxGetApp()->m_pMainWnd)->GetActiveFrame();
+	pChild->setChildDocIsSaved(isSaved);
+}
 
 void CMainFrame::F_NewFile_Toolbox_ShowStatus()
 {

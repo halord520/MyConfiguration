@@ -172,6 +172,11 @@ void CPropertiesWnd::ShowProp(UINT toolBoxChoose, CMyConfigurationDoc* doc)
 	SetPropListFont();
 	switch (toolBoxChoose)
 	{
+		case IDB_BASEELEMENT:
+		{
+			ShowProp_None();
+			break;
+		}
 		case ID_TOOLBOX_BACKGROUND:
 		{
 			ShowProp_Background(doc);
@@ -180,6 +185,11 @@ void CPropertiesWnd::ShowProp(UINT toolBoxChoose, CMyConfigurationDoc* doc)
 		case ID_TOOLBOX_LINE:
 		{
 			ShowProp_Line(doc);
+			break;
+		}
+		case ID_TOOLBOX_RECT:
+		{
+			ShowProp_Rect(doc);
 			break;
 		}
 		default:
@@ -205,9 +215,11 @@ LRESULT CPropertiesWnd::OnPropertyChanged(__in WPARAM wparam, __in LPARAM lparam
 	
 	int nID = pProp->GetData();
 	if (nID >= ID_PROP_BACKGROUND_NAME && nID <= ID_PROP_BACKGROUND_SHOWTYPE)
-		PropertyChanged_Background(pProp, pChild, pDoc, pV, nID, strOldValue, strNewValue);		//背景属性
+		PropertyChanged_Background(pProp, pChild, pDoc, pV, nID, strOldValue, strNewValue);			//背景属性
 	if (nID >= ID_PROP_LINE_NAME && nID <= ID_PROP_LINE_WIDTH)
 		PropertyChanged_Line(pProp, pChild, pDoc, pV, nID, strOldValue, strNewValue);				//直线属性
+	//if (nID >= ID_PROP_RECT_NAME && nID <= ID_PROP_RECT_ISFILL)
+	//	PropertyChanged_Rect(pProp, pChild, pDoc, pV, nID, strOldValue, strNewValue);				//矩形属性
 	return 0;
 }
 
@@ -460,6 +472,203 @@ void CPropertiesWnd::PropertyChanged_Line(CMFCPropertyGridProperty* pProp,
 	pChild->setChildDocIsSaved(TRUE);
 }
 
+void CPropertiesWnd::PropertyChanged_Rect(CMFCPropertyGridProperty* pProp,
+							CChildFrame* pChild,
+							CMyConfigurationDoc* pDoc,
+							CMyConfigurationView* pV,
+							int nID, VARIANT strOldValue, CString strNewValue)
+{
+	if (pDoc->m_curActiveObject == NULL)
+		return;
+	CClientDC ViewDC(this);
+	pV->OnPrepareDC(&ViewDC);
+
+	CString msg;
+	CPoint ptStart, ptEnd;
+	switch (nID)
+	{
+		case ID_PROP_RECT_NAME:
+		{
+			//名称的改变 
+			if (strNewValue == _T(""))
+			{
+				MessageBox(_T("请输入名称"), _T("错误"), MB_ICONERROR);
+				pProp->SetValue(strOldValue);
+				return;
+			}
+			((CRectObj*)pDoc->m_curActiveObject)->setName(strNewValue);
+			break;
+		}
+		case ID_PROP_RECT_STARTX:
+		{
+			//坐标改变 startX
+			if (atoi(strNewValue) < 0 || atoi(strNewValue) >= ((CRectObj*)pDoc->m_curActiveObject)->getPointTopRight().x)
+			{
+				msg.Format("输入的尺寸有误!范围(%d--%d)", 0, ((CRectObj*)pDoc->m_curActiveObject)->getPointTopRight().x - 1);
+				MessageBox(msg, _T("错误"), MB_ICONERROR);
+				pProp->SetValue(strOldValue);
+				return;
+			}
+			ptStart.x = atoi(strNewValue);
+			ptStart.y = ((CRectObj*)pDoc->m_curActiveObject)->getPointTopLeft().y;
+			((CRectObj*)pDoc->m_curActiveObject)->setPointTopLeft(ptStart);
+
+			ptStart.y = ((CRectObj*)pDoc->m_curActiveObject)->getPointBottomLeft().y;
+			((CRectObj*)pDoc->m_curActiveObject)->setPointBottomLeft(ptStart);
+
+			//刷新属性页
+			m_wndPropList.RemoveAll();
+			SetPropListFont();
+			ShowProp_Rect(pDoc);
+
+			pDoc->UpdateAllViews(NULL);
+			break;
+		}
+		case ID_PROP_RECT_STARTY:
+		{
+			//坐标改变 
+			if (atoi(strNewValue) < 0 || atoi(strNewValue) >= ((CRectObj*)pDoc->m_curActiveObject)->getPointBottomRight().y)
+			{
+				msg.Format("输入的尺寸有误!范围(%d--%d)", 0, ((CRectObj*)pDoc->m_curActiveObject)->getPointBottomRight().y - 1);
+				MessageBox(msg, _T("错误"), MB_ICONERROR);
+				pProp->SetValue(strOldValue);
+				return;
+			}
+			ptStart.y = atoi(strNewValue);
+
+			ptStart.x = ((CRectObj*)pDoc->m_curActiveObject)->getPointTopLeft().x;
+			((CRectObj*)pDoc->m_curActiveObject)->setPointTopLeft(ptStart);
+
+			ptStart.x = ((CRectObj*)pDoc->m_curActiveObject)->getPointTopRight().x;
+			((CRectObj*)pDoc->m_curActiveObject)->setPointTopRight(ptStart);
+
+			//刷新属性页
+			m_wndPropList.RemoveAll();
+			SetPropListFont();
+			ShowProp_Rect(pDoc);
+
+			pDoc->UpdateAllViews(NULL);
+			break;
+		}
+		case ID_PROP_RECT_LENGTH:
+		{
+			//坐标改变 
+			if (atoi(strNewValue) <= 0 || atoi(strNewValue) > MAX_PRO_SIZE_X)
+			{
+				msg.Format("输入的尺寸有误!范围(%d--%d)", 1, MAX_PRO_SIZE_X);
+				MessageBox(msg, _T("错误"), MB_ICONERROR);
+				pProp->SetValue(strOldValue);
+				return;
+			}
+			ptStart.x = ((CRectObj*)pDoc->m_curActiveObject)->getPointTopLeft().x + atoi(strNewValue);
+			ptStart.y = ((CRectObj*)pDoc->m_curActiveObject)->getPointTopLeft().y;
+			((CRectObj*)pDoc->m_curActiveObject)->setPointTopRight(ptStart);
+
+			ptStart.x = ((CRectObj*)pDoc->m_curActiveObject)->getPointBottomLeft().x + atoi(strNewValue);
+			ptStart.y = ((CRectObj*)pDoc->m_curActiveObject)->getPointBottomLeft().y;
+			((CRectObj*)pDoc->m_curActiveObject)->setPointBottomRight(ptStart);
+			pDoc->UpdateAllViews(NULL);
+			break;
+		}
+		case ID_PROP_RECT_WIDTH:
+		{
+			//坐标改变 
+			if (atoi(strNewValue) <= 0 || atoi(strNewValue) > MAX_PRO_SIZE_Y)
+			{
+				msg.Format("输入的尺寸有误!范围(%d--%d)", 1, MAX_PRO_SIZE_Y);
+				MessageBox(msg, _T("错误"), MB_ICONERROR);
+				pProp->SetValue(strOldValue);
+				return;
+			}
+			ptStart.x = ((CRectObj*)pDoc->m_curActiveObject)->getPointTopLeft().x;
+			ptStart.y = ((CRectObj*)pDoc->m_curActiveObject)->getPointTopLeft().y + atoi(strNewValue);
+			((CRectObj*)pDoc->m_curActiveObject)->setPointBottomLeft(ptStart);
+
+			ptStart.x = ((CRectObj*)pDoc->m_curActiveObject)->getPointTopRight().x;
+			ptStart.y = ((CRectObj*)pDoc->m_curActiveObject)->getPointTopRight().y + atoi(strNewValue);
+			((CRectObj*)pDoc->m_curActiveObject)->setPointBottomRight(ptStart);
+			pDoc->UpdateAllViews(NULL);
+			break;
+		}
+		case ID_PROP_RECT_COLOR:
+		{
+			//颜色改变 
+			COLORREF color = pProp->GetValue().intVal;
+			((CRectObj*)pDoc->m_curActiveObject)->setColor(color);
+			pDoc->UpdateAllViews(NULL);
+			break;
+		}
+		case ID_PROP_RECT_TYPE:
+		{
+			int lineType = PS_SOLID;
+			if (strNewValue == "──────────────────")
+				lineType = PS_SOLID;
+			else if (strNewValue == "- - - - - - - - - - - - - - - ")
+				lineType = PS_DASH;
+			else if (strNewValue == ".................................................")
+				lineType = PS_DOT;
+			else if (strNewValue == "_._._._._._._._._._._._._._._._._")
+				lineType = PS_DASHDOT;
+			else if (strNewValue == "_.._.._.._.._.._.._.._.._.._.._.._.._")
+				lineType = PS_DASHDOTDOT;
+			else
+				lineType = PS_SOLID;
+
+			((CRectObj*)pDoc->m_curActiveObject)->setLineType(lineType);
+			pDoc->UpdateAllViews(NULL);
+			break;
+		}
+		case ID_PROP_RECT_LINEWIDTH:
+		{
+			if (atoi(strNewValue) < 0 || atoi(strNewValue) > MAX_LINE_WIDTH)
+			{
+				msg.Format("输入的尺寸有误!范围(%d--%d)", 0, MAX_LINE_WIDTH);
+				MessageBox(msg, _T("错误"), MB_ICONERROR);
+				pProp->SetValue(strOldValue);
+				return;
+			}
+			((CRectObj*)pDoc->m_curActiveObject)->setLineWidth(atoi(strNewValue));
+			pDoc->UpdateAllViews(NULL);
+			break;
+		}
+		case ID_PROP_RECT_ROUND:
+		{
+			if (atoi(strNewValue) < MIN_RECT_ROUND || atoi(strNewValue) > MAX_RECT_ROUND)
+			{
+				msg.Format("输入的尺寸有误!范围(%d--%d)", MIN_RECT_ROUND, MAX_RECT_ROUND);
+				MessageBox(msg, _T("错误"), MB_ICONERROR);
+				pProp->SetValue(strOldValue);
+				return;
+			}
+			((CRectObj*)pDoc->m_curActiveObject)->setRoundRect(atoi(strNewValue));
+			pDoc->UpdateAllViews(NULL);
+			break;
+		}
+		case ID_PROP_RECT_ISFILL:
+		{
+			BOOL isFill = FALSE;
+			if (strNewValue == "是")
+				isFill = TRUE;
+			else
+				isFill = FALSE;
+			((CRectObj*)pDoc->m_curActiveObject)->setIsFill(isFill);
+			pDoc->UpdateAllViews(NULL);
+			break;
+		}
+		default:
+			break;
+	}
+	pChild->setChildDocIsSaved(TRUE);
+}
+
+void CPropertiesWnd::ShowProp_None()
+{
+	m_wndPropList.EnableHeaderCtrl(FALSE);
+	m_wndPropList.EnableDescriptionArea();
+	m_wndPropList.SetVSDotNetLook();
+	m_wndPropList.MarkModifiedProperties();
+}
+
 void CPropertiesWnd::ShowProp_Background(CMyConfigurationDoc* doc)
 {
 	if (doc == NULL)
@@ -605,4 +814,89 @@ void CPropertiesWnd::ShowProp_Line(CMyConfigurationDoc* doc)
 
 	m_wndPropList.AddProperty(pGroupProject);
 
+}
+
+void CPropertiesWnd::ShowProp_Rect(CMyConfigurationDoc* doc)
+{
+	if (doc == NULL)
+		return;
+	if (doc->m_curActiveObject == NULL)
+		return;
+	int     ID = ((CRectObj*)doc->m_curActiveObject)->getID();
+	CString Name = ((CRectObj*)doc->m_curActiveObject)->getName();
+	CPoint PointTopLeft = ((CRectObj*)doc->m_curActiveObject)->getPointTopLeft();
+	CPoint PointTopRight = ((CRectObj*)doc->m_curActiveObject)->getPointTopRight();
+	CPoint PointBottomLeft = ((CRectObj*)doc->m_curActiveObject)->getPointBottomLeft();
+	CPoint PointBottomRight = ((CRectObj*)doc->m_curActiveObject)->getPointBottomRight();
+	COLORREF Color = ((CRectObj*)doc->m_curActiveObject)->getColor();
+	int lineType = ((CRectObj*)doc->m_curActiveObject)->getLineType();
+	int roundRect = ((CRectObj*)doc->m_curActiveObject)->getRoundRect();
+
+	CString cs_lineType;
+	if (lineType == PS_SOLID)
+		cs_lineType = _T("──────────────────");
+	else if (lineType == PS_DASH)
+		cs_lineType = _T("- - - - - - - - - - - - - - - ");
+	else if (lineType == PS_DOT)
+		cs_lineType = _T(".................................................");
+	else if (lineType == PS_DASHDOT)
+		cs_lineType = _T("_._._._._._._._._._._._._._._._._");
+	else if (lineType == PS_DASHDOTDOT)
+		cs_lineType = _T("_.._.._.._.._.._.._.._.._.._.._.._.._");
+	else
+		cs_lineType = _T("──────────────────");
+
+	BOOL isFill = ((CRectObj*)doc->m_curActiveObject)->getIsFill();
+	CString cs_rectIsFill;
+	if (isFill)
+		cs_rectIsFill = _T("是");
+	else  
+		cs_rectIsFill = _T("否");
+
+	int lineWidth = ((CRectObj*)doc->m_curActiveObject)->getLineWidth();
+
+
+	m_wndPropList.EnableHeaderCtrl(FALSE);
+	m_wndPropList.EnableDescriptionArea();
+	m_wndPropList.SetVSDotNetLook();
+	m_wndPropList.MarkModifiedProperties();
+
+	//1
+	CMFCPropertyGridProperty* pGroupProject = new CMFCPropertyGridProperty(_T("基本属性"));
+
+	CMFCPropertyGridProperty* lineID = new CMFCPropertyGridProperty(_T("ID"), (long)ID, _T("指定该矩形的ID(系统自动分配)"));
+	lineID->AllowEdit(FALSE);
+	pGroupProject->AddSubItem(lineID);
+
+	pGroupProject->AddSubItem(new CMFCPropertyGridProperty(_T("名称"), (_variant_t)Name, _T("指定该矩形的名称"), ID_PROP_RECT_NAME));
+	pGroupProject->AddSubItem(new CMFCPropertyGridProperty(_T("起始坐标(x)"), (long)PointTopLeft.x, _T("指定该矩形起始的坐标位置(x)"), ID_PROP_RECT_STARTX, NULL, NULL, _T("0123456789")));
+	pGroupProject->AddSubItem(new CMFCPropertyGridProperty(_T("起始坐标(y)"), (long)PointTopLeft.y, _T("指定该矩形起始的坐标位置(y)"), ID_PROP_RECT_STARTY, NULL, NULL, _T("0123456789")));
+	pGroupProject->AddSubItem(new CMFCPropertyGridProperty(_T("长"), (long)(PointTopRight.x - PointTopLeft.x), _T("指定该矩形的长"), ID_PROP_RECT_LENGTH, NULL, NULL, _T("0123456789")));
+	pGroupProject->AddSubItem(new CMFCPropertyGridProperty(_T("宽"), (long)(PointBottomRight.y - PointTopRight.y), _T("指定该矩形的宽"), ID_PROP_RECT_WIDTH, NULL, NULL, _T("0123456789")));
+
+	CMFCPropertyGridColorProperty* pColorProp = new CMFCPropertyGridColorProperty(_T("颜色"), Color, NULL, _T("指定该矩形的颜色"), ID_PROP_RECT_COLOR);
+	// 自定义绘制颜色的方式
+	pColorProp->AllowEdit(FALSE);
+	pColorProp->EnableOtherButton(_T("其他"));
+	pGroupProject->AddSubItem(pColorProp);
+
+	CMFCPropertyGridProperty* pLineType = new CMFCPropertyGridProperty(_T("线型"), (_variant_t)cs_lineType, _T("指定该矩形的线型"), ID_PROP_RECT_TYPE);
+	pLineType->AddOption(_T("──────────────────"));
+	pLineType->AddOption(_T("- - - - - - - - - - - - - - - "));
+	pLineType->AddOption(_T("................................................."));
+	pLineType->AddOption(_T("_._._._._._._._._._._._._._._._._"));
+	pLineType->AddOption(_T("_.._.._.._.._.._.._.._.._.._.._.._.._"));
+	pLineType->AllowEdit(FALSE);
+	pGroupProject->AddSubItem(pLineType);
+
+	pGroupProject->AddSubItem(new CMFCPropertyGridProperty(_T("线宽"), (long)lineWidth, _T("指定该矩形的线宽"), ID_PROP_RECT_WIDTH, NULL, NULL, _T("0123456789")));
+
+	pGroupProject->AddSubItem(new CMFCPropertyGridProperty(_T("圆角"), (long)roundRect, _T("指定该矩形的圆角(0-100)"), ID_PROP_RECT_ROUND, NULL, NULL, _T("0123456789")));
+
+	CMFCPropertyGridProperty* pIsFill = new CMFCPropertyGridProperty(_T("是否填充"), (_variant_t)cs_rectIsFill, _T("指定该矩形是否填充"), ID_PROP_RECT_ISFILL);
+	pIsFill->AddOption(_T("是"));
+	pIsFill->AddOption(_T("否"));
+	pIsFill->AllowEdit(FALSE);
+	pGroupProject->AddSubItem(pIsFill);
+	m_wndPropList.AddProperty(pGroupProject);
 }

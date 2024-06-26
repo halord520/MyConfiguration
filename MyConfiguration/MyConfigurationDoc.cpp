@@ -44,7 +44,9 @@ CMyConfigurationDoc::CMyConfigurationDoc()
 	m_BackPicName = _T("");		//背景图片的名字  （去掉绝对路径后的名字）
 	m_BackPicShowType  = 0;		//显示背景图片的方式  0--平铺  1--拉伸 2--居中
 
+	m_curActiveObject = NULL;
 	m_ElementObList.RemoveAll();
+	m_curActiveObject_Mult.RemoveAll();
 	m_TotalObjectNum = 0;
 }
 
@@ -157,6 +159,10 @@ void CMyConfigurationDoc::Serialize(CArchive& ar)
 	}
 	else
 	{
+		m_ElementObList.RemoveAll();
+		m_curActiveObject = NULL;
+		m_curActiveObject_Mult.RemoveAll();
+
 		ar >> m_ProjectFileName;
 		ar >> m_ProjectWidth;
 		ar >> m_ProjectHeight;
@@ -176,16 +182,17 @@ void CMyConfigurationDoc::Serialize(CArchive& ar)
 			{
 				case OBJECT_BASE_LINE:
 				{
-					pObj = new CBaseObj();
+					pObj = new CLineObj();
 					pObj->setObjectType(OBJECT_BASE_LINE);
 					pObj->Serialize(ar);
+					pObj->setDrawMode(DRAW_MODE_REALLY);
 					m_ElementObList.AddTail(pObj);
 					break;
 				}
 				default:
 					break;
 			}
-		}		 
+		}
 	}
 }
 
@@ -209,23 +216,25 @@ CBaseObj* CMyConfigurationDoc::GetActiveObj(CPoint point, UINT uZoomRate)
 	
 	while (pos != NULL) 
 	{
-		pObj = (CBaseObj*)m_ElementObList.GetNext(pos);
-		int objectType = pObj->getObjectType();
-		switch (objectType)
-		{
-			case OBJECT_BASE_LINE:
-			{
-				if (  ((CLineObj*)pObj)->InSelectArea(point, uZoomRate)  )
-					return pObj;
-				break;
-			}
-			default:
-				break;
-		}		
+		pObj = (CBaseObj*)m_ElementObList.GetNext(pos);		
+		if (  pObj->InSelectArea(point, uZoomRate)  )
+			return pObj;		
 	}
 	return NULL;
 }
 
+void CMyConfigurationDoc::GetActiveObj_MultList(CObList& List, CRect rect, UINT uZoomRate)
+{ 
+	CRect rc = 0, rcInter = 0;
+	CBaseObj* pObj;
+	POSITION pos = m_ElementObList.GetHeadPosition();
+	while (pos != NULL)
+	{
+		pObj = (CBaseObj*)m_ElementObList.GetNext(pos);
+		if(pObj->GetBorderRect(rect, uZoomRate) )
+			List.AddTail(pObj);			
+	}
+}
 
 
 #ifdef SHARED_HANDLERS

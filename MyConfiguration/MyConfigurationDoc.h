@@ -32,11 +32,13 @@ private:
 
 public:
 	CObList		m_ElementObList;		//所有图元的链表
-	CBaseObj	*m_curActiveObject;		//当前单选的活动图元
+	CBaseObj*   m_curActiveObject;		//当前单选的活动图元
+	CObList     m_curActiveObject_Mult;	//当前单选的活动图元(多选)
 
 // 操作
 public:
 	CBaseObj* GetActiveObj(CPoint point, UINT uZoomRate);
+	void      GetActiveObj_MultList(CObList& List, CRect rect, UINT uZoomRate);
 
 	//工程文件绝对路径名称
 	void	setProjectPathName(CString ProjectPathName) { m_ProjectPathName = ProjectPathName; }

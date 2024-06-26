@@ -24,7 +24,7 @@ CLineObj::CLineObj():CBaseObj()
 	m_Name		 = "";
 	m_Color		= RGB(0,0,0);	
 	m_LineType	= PS_SOLID;
-	m_LineWidth = 1;
+	m_LineWidth = 1; 
 }               
 
 CLineObj::~CLineObj()
@@ -38,11 +38,23 @@ void CLineObj::Serialize( CArchive& ar )
 {
 	if (ar.IsStoring())
 	{
-
+		ar << (CPoint)m_PointStart;
+		ar << (CPoint)m_PointEnd;
+		ar << m_ID;
+		ar << m_Name;
+		ar << (DWORD)m_Color;
+		ar << m_LineType;
+		ar << m_LineWidth;
 	}
 	else
 	{
-
+		ar >> (CPoint &)m_PointStart;
+		ar >> (CPoint &)m_PointEnd;
+		ar >> m_ID;
+		ar >> m_Name;
+		ar >> (DWORD &)m_Color;
+		ar >> m_LineType;
+		ar >> m_LineWidth;
 	}
 }
 
@@ -159,7 +171,6 @@ int CLineObj::InSelectArea(CPoint point, UINT uZoomRate)
 		return IN_RECT;
 
 	return OUT_OF_RECT;
-	return FALSE;
 }
 
 BOOL CLineObj::PointInBorder(CPoint point, UINT uZoomRate)
@@ -212,4 +223,89 @@ BOOL CLineObj::PointInBorder(CPoint point, UINT uZoomRate)
 		return TRUE;
 
 	return FALSE;
+}
+
+BOOL CLineObj::GetBorderRect(CRect rect, UINT uZoomRate)
+{
+	CRect rcInter(0, 0, 0, 0), rc(0, 0, 0, 0);
+	rc = rect;
+
+	if (rc.left > rc.right) 
+	{
+		int nTemp = rc.left;
+		rc.left = rc.right;
+		rc.right = nTemp;
+	}
+	if (rc.top > rc.bottom) 
+	{
+		int nTemp = rc.top;
+		rc.top = rc.bottom;
+		rc.bottom = nTemp;
+	}
+	if (rc.left == rc.right)
+		rc.right++;
+	if (rc.top == rc.bottom)
+		rc.bottom++;
+
+	rcInter.UnionRect(rcInter, rc);
+	rc.left = (int)((float)uZoomRate / 100 * rc.left);
+	rc.right = (int)((float)uZoomRate / 100 * rc.right);
+	rc.top = (int)((float)uZoomRate / 100 * rc.top);
+	rc.bottom = (int)((float)uZoomRate / 100 * rc.bottom);
+	if (rc.left > rc.right)
+	{
+		int nTemp = rc.left;
+		rc.left = rc.right;
+		rc.right = nTemp;
+	}
+	if (rc.top > rc.bottom)
+	{
+		int nTemp = rc.top;
+		rc.top = rc.bottom;
+		rc.bottom = nTemp;
+	}
+	if (rc.left == rc.right)
+		rc.right++;
+	if (rc.top == rc.bottom)
+		rc.bottom++;
+
+	if ( rc.PtInRect(getPointStart()) || rc.PtInRect(getPointEnd()))
+		return TRUE;
+	return FALSE;
+}
+
+void CLineObj::ClearDraw(CWnd* wnd, CDC* pDC, UINT uZoomRate)
+{
+	CPoint pt[4];
+
+	pt[0].x = getPointStart().x;
+	pt[0].y = getPointStart().y;
+	pt[3].x = getPointEnd().x;
+	pt[3].y = getPointEnd().y;
+	pt[1].x = pt[3].x;
+	pt[1].y = pt[0].y;
+	pt[2].x = pt[0].x;
+	pt[2].y = pt[3].y;
+
+	CRect rect(pt[0].x, pt[0].y, pt[3].x, pt[3].y);
+	for (int i = 0; i < 4; i++) {
+		if (pt[i].x < rect.left)
+			rect.left = pt[i].x;
+		if (pt[i].y < rect.top)
+			rect.top = pt[i].y;
+		if (pt[i].x > rect.right)
+			rect.right = pt[i].x;
+		if (pt[i].y > rect.bottom)
+			rect.bottom = pt[i].y;
+	}
+
+	rect.left -= getLineWidth() + CORNER_RECT * 2;
+	rect.top -= getLineWidth() + CORNER_RECT * 2;
+	rect.right += getLineWidth() + CORNER_RECT * 2;
+	rect.bottom += getLineWidth() + CORNER_RECT * 2;
+	rect.right++;                   // excluse right-bottom border
+	rect.bottom++;
+
+	pDC->LPtoDP(&rect);
+	wnd->InvalidateRect(&rect, TRUE);
 }

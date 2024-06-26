@@ -11,20 +11,29 @@ protected: // 仅从序列化创建
 	CMyConfigurationView();
 	DECLARE_DYNCREATE(CMyConfigurationView)
 
-	BOOL   m_MousePushDown;		//鼠标按下 还是 抬起的 标志位
+	BOOL	m_MousePushDown;		//鼠标按下 还是 抬起的 标志位
+	CPoint	m_pointMove;		//鼠标移动记录的位置
+
 	//背景界面刷
 	CBrush m_brBackGround;
+	CRect m_rcSelect_Mult;
 
 	void startDrawingOperation_MouseMove(CClientDC* ViewDC, CPoint point);
 	void endDrawingOperation_MouseMove();
 	void selectObject_Single_MouseMove();
+	void selectObject_Mult_MouseMove(CClientDC* ViewDC, CPoint point);
+	void startModifyOperation_MouseMove(CClientDC* ViewDC, CPoint point);
 	void startDrawingOperation_LBtnDown(CClientDC *ViewDC, CPoint point);
 	void endDrawingOperation_LBtnDown();
+	void selectObject_None_LBtnDown(CClientDC* ViewDC, CPoint point);
 	void selectObject_Single_LBtnDown(CClientDC* ViewDC, CPoint point);
+	void selectObject_Mult_LBtnDown(CClientDC* ViewDC, CPoint point);
 	void startDrawingOperation_LBtnUp(CClientDC* ViewDC, CPoint point);
 	void endDrawingOperation_LBtnUp();
 	void selectObject_Single_LBtnUp();
-
+	void endModifyOperation_LBtnUp(CClientDC* ViewDC, CPoint point);
+	void endSelectObject_Mult_LBtnUp(CClientDC* ViewDC, CPoint point);
+	void endModifyObject_Mult_LBtnUp(CClientDC* ViewDC, CPoint point);
 // 特性
 public:
 	CMyConfigurationDoc* GetDocument() const;

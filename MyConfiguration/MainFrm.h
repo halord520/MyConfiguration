@@ -31,7 +31,7 @@ public:
 	void setToolBoxChoose_Element(UINT ToolBoxChoose_Element) { m_ToolBoxChoose_Element = ToolBoxChoose_Element; };
 	UINT getToolBoxChoose_Element() { return m_ToolBoxChoose_Element; };
 
-	void ShowProp(UINT toolBoxChoose, CString CaptionText);			//显示 属性页 内容
+	void ShowProp(int choose_Element);			//显示 属性页 内容
 	void ShowActiveDocProp();
 	void ShowToolbox(UINT ID);
 
@@ -58,11 +58,14 @@ public:  // 控件条/窗口嵌入成员
 
 public:
 	/***********************以下是用户自定义函数***************************/
+	void F_SetProjectSaved(BOOL isSaved);		//工程文件保存 --把保存按钮显示出来
+
 	void F_NewFile_Toolbox_ShowStatus();		//新建工程文件时工具栏和窗口的显示状态
 	void F_OpenFile_Toolbox_ShowStatus();		//打开工程文件时工具栏和窗口的显示状态
 	void F_SaveFile_Toolbox_ShowStatus();		//保存工程文件时工具栏和窗口的显示状态
 	void F_CloseFile_Toolbox_ShowStatus();		//关闭工程文件时工具栏和窗口的显示状态
 	void F_SwitchFile_Toolbox_ShowStatus();		//切换工程文件时工具栏和窗口的显示状态
+	
 
 // 生成的消息映射函数
 protected:

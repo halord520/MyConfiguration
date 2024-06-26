@@ -99,6 +99,12 @@
     <ClInclude Include="ToolWnd\ViewTree.h">
       <Filter>ToolWnd</Filter>
     </ClInclude>
+    <ClInclude Include="object\line.h">
+      <Filter>object</Filter>
+    </ClInclude>
+    <ClInclude Include="object\rect.h">
+      <Filter>object</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MyConfiguration.cpp">
@@ -154,6 +160,12 @@
     </ClCompile>
     <ClCompile Include="MyConfigurationViewOper.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="object\line.cpp">
+      <Filter>object</Filter>
+    </ClCompile>
+    <ClCompile Include="object\rect.cpp">
+      <Filter>object</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

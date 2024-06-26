@@ -38,8 +38,10 @@ protected:
 	CPropertiesToolBar m_wndToolBar;
 	CMFCPropertyGridCtrl m_wndPropList;
 
+	void ShowProp_None();
 	void ShowProp_Background(CMyConfigurationDoc* doc);
 	void ShowProp_Line(CMyConfigurationDoc* doc);
+	void ShowProp_Rect(CMyConfigurationDoc* doc);
 
 	void PropertyChanged_Background(CMFCPropertyGridProperty* pProp,
 									CChildFrame* pChild,
@@ -47,6 +49,11 @@ protected:
 									CMyConfigurationView* pV,
 									int nID, VARIANT strOldValue, CString strNewValue);
 	void PropertyChanged_Line(CMFCPropertyGridProperty* pProp,
+							  CChildFrame* pChild,
+							  CMyConfigurationDoc* pDoc,
+							  CMyConfigurationView* pV,
+							  int nID, VARIANT strOldValue, CString strNewValue);
+	void PropertyChanged_Rect(CMFCPropertyGridProperty* pProp,
 							  CChildFrame* pChild,
 							  CMyConfigurationDoc* pDoc,
 							  CMyConfigurationView* pV,
